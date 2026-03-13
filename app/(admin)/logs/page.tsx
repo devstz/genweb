@@ -5,12 +5,10 @@ import { useGenerations } from '@/hooks/useGenerations';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1$/, '') || 'http://localhost:8000';
-
 function fullMediaUrl(path: string) {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    return `${API_BASE}${path}`;
+    return `/api/proxy${path.startsWith('/') ? path : `/${path}`}`;
 }
 
 function getStatusLabel(status: string) {

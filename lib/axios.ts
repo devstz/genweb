@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-// Извлекаем базовый URL для API (например, http://localhost:8000/api/v1)
-// В Next.js .env переменные, доступные браузеру, должны начинаться с NEXT_PUBLIC_
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// Запросы идут через Next.js API proxy (same-origin), бэкенд настраивается через API_BACKEND_URL на сервере
+const API_BASE = '/api/proxy/api/v1';
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -42,8 +41,8 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // Пытаемся получить новый токен
-        const { data } = await axios.post(`${API_URL}/admin/auth/refresh`, {
+        // Пытаемся получить новый токен (через прокси)
+        const { data } = await api.post('/admin/auth/refresh', {
           refresh_token: refreshToken,
         });
 
