@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BACKEND_URL = process.env.API_BACKEND_URL || 'http://localhost:8000';
+const API_BACKEND_URL = process.env.API_URL || 'http://bot_api:8000';
 
 const FORWARD_HEADERS = ['authorization', 'content-type'] as const;
 
@@ -57,11 +57,14 @@ async function proxy(
       headers: { 'Content-Type': contentType },
     });
   } catch (err) {
-    console.error('[API Proxy]', err);
-    return NextResponse.json(
-      { detail: 'Backend unavailable' },
-      { status: 502 }
-    );
+    const cause = err instanceof Error ? err.cause : null;
+    const code = cause && typeof cause === 'object' && 'code' in cause ? (cause as { code?: string }).code : null;
+    console.error('[API Proxy] fetch failed', { url, code, error: err });
+    const message =
+      code === 'ECONNREFUSED'
+        ? `Backend unreachable at ${API_BACKEND_URL}. Is the server running? Check API_BACKEND_URL in .env.local`
+        : 'Backend unavailable';
+    return NextResponse.json({ detail: message }, { status: 502 });
   }
 }
 
