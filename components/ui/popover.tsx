@@ -9,8 +9,7 @@ function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-function PopoverTrigger({ asChild: _asChild, ...props }: PopoverPrimitive.Trigger.Props) {
-  // asChild stripped to avoid leaking to DOM (React warning)
+function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 

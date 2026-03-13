@@ -66,9 +66,10 @@ export function useDashboardData(period: string = "week") {
                 setCached(cacheKey, response.data);
                 setData(response.data);
                 setError(null);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 if (axios.isCancel(err)) return;
-                setError(err?.message || 'Не удалось загрузить данные дашборда');
+                const message = err instanceof Error ? err.message : 'Не удалось загрузить данные дашборда';
+                setError(message);
             } finally {
                 if (!controller.signal.aborted) setIsLoading(false);
             }
@@ -90,8 +91,9 @@ export function useDashboardData(period: string = "week") {
             setCached(`dashboard:${period}`, response.data);
             setData(response.data);
             setError(null);
-        } catch (err: any) {
-            setError(err?.message || 'Не удалось загрузить данные дашборда');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Не удалось загрузить данные дашборда';
+            setError(message);
         } finally {
             setIsLoading(false);
         }

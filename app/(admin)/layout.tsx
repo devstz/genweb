@@ -20,6 +20,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         if (!localStorage.getItem('access_token')) {
             router.push('/login');
@@ -27,6 +28,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }, [router]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSidebarOpen(false);
     }, [pathname]);
 

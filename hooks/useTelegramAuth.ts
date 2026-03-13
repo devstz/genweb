@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api } from '@/lib/axios';
 import { useEffect, useState } from 'react';
 
@@ -28,8 +29,14 @@ export function useTelegramAuth() {
             setAuthToken(data.token);
             setTelegramLink(data.deep_link);
             setStatus('pending');
-        } catch (err: any) {
-            setError(err?.response?.data?.detail || 'Failed to initialize authorization');
+        } catch (err: unknown) {
+            let message = 'Failed to initialize authorization';
+            if (axios.isAxiosError(err)) {
+                message = err.response?.data?.detail || err.message;
+            } else if (err instanceof Error) {
+                message = err.message;
+            }
+            setError(message);
         } finally {
             setIsLoading(false);
         }
