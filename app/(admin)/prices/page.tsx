@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { useState } from 'react';
 import { PackCard } from '@/components/admin/PackCard';
 import { IconPicker } from '@/components/admin/IconPicker';
@@ -76,7 +77,7 @@ export default function PricesPage() {
                     onClick={handleCloseForm}
                     className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-medium text-sm"
                 >
-                    <span className="material-symbols-outlined text-sm">arrow_back</span> Назад к ценам
+                    <Icon name="arrow_back" size={14} /> Назад к ценам
                 </button>
 
                 <div>
@@ -196,7 +197,7 @@ export default function PricesPage() {
                     onClick={() => handleOpenForm()}
                     className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
                 >
-                    <span className="material-symbols-outlined text-lg">add</span>
+                    <Icon name="add" size={18} />
                     Добавить пакет
                 </button>
             </div>

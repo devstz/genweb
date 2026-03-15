@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Icon } from '@/components/admin/Icon';
 import { cn } from '@/lib/utils';
 
 export const PACK_ICON_OPTIONS = [
@@ -40,10 +41,10 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
                 )}
             >
                 <div className="flex items-center gap-2 min-w-0">
-                    <span className="material-symbols-outlined text-xl text-primary shrink-0">{currentIcon}</span>
+                    <Icon name={currentIcon} size={20} className="text-primary shrink-0" />
                     <span className="text-slate-500 dark:text-slate-400 text-sm truncate">{currentIcon}</span>
                 </div>
-                <span className="material-symbols-outlined shrink-0 text-slate-400 text-lg">expand_more</span>
+                <Icon name="expand_more" size={20} className="text-slate-400 shrink-0" />
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto p-3" sideOffset={8}>
                 <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6">
@@ -60,7 +61,7 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
                             )}
                             title={icon}
                         >
-                            <span className="material-symbols-outlined text-2xl">{icon}</span>
+                            <Icon name={icon} size={24} />
                         </button>
                     ))}
                 </div>

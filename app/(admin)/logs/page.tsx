@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { useState } from 'react';
 import { useGenerations } from '@/hooks/useGenerations';
 import { format } from 'date-fns';
@@ -47,7 +48,7 @@ export default function LogsPage() {
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
                         <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-200 dark:border-primary/20 rounded-lg hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors cursor-pointer">
-                            <span className="material-symbols-outlined text-sm">download</span>
+                            <Icon name="download" size={14} />
                             <span>Экспорт CSV</span>
                         </button>
                         <select
@@ -77,7 +78,7 @@ export default function LogsPage() {
                     <div className="overflow-x-auto">
                         {isLoading ? (
                             <div className="flex items-center justify-center py-16">
-                                <span className="material-symbols-outlined animate-spin text-4xl text-primary">autorenew</span>
+                                <Icon name="autorenew" size={40} className="animate-spin text-primary" />
                             </div>
                         ) : (
                             <table className="w-full text-left border-collapse min-w-[800px]">
@@ -120,12 +121,12 @@ export default function LogsPage() {
                                             <td className="px-6 py-4">
                                                 {item.status === 'failed' ? (
                                                     <div className="flex items-center gap-2 text-red-500">
-                                                        <span className="material-symbols-outlined">error</span>
+                                                        <Icon name="error" />
                                                         <span className="text-xs font-medium">{item.error_message || 'Ошибка'}</span>
                                                     </div>
                                                 ) : item.result_video_url ? (
                                                     <div className="size-16 rounded-lg bg-primary/20 flex flex-col items-center justify-center text-primary overflow-hidden relative group cursor-pointer">
-                                                        <span className="material-symbols-outlined text-sm mb-1">movie</span>
+                                                        <Icon name="movie" size={14} className="mb-1" />
                                                         <span className="text-[10px] font-bold uppercase">MP4</span>
                                                     </div>
                                                 ) : item.status === 'processing' || item.status === 'pending' ? (
@@ -135,7 +136,7 @@ export default function LogsPage() {
                                                     </div>
                                                 ) : (
                                                     <div className="size-16 rounded-lg bg-slate-100 dark:bg-primary/10 flex items-center justify-center text-slate-400">
-                                                        <span className="material-symbols-outlined">hourglass_empty</span>
+                                                        <Icon name="hourglass_empty" />
                                                     </div>
                                                 )}
                                             </td>
@@ -161,14 +162,14 @@ export default function LogsPage() {
                                 disabled={!hasPrev}
                                 className="p-1.5 rounded bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/20 disabled:opacity-50 cursor-not-allowed disabled:cursor-not-allowed enabled:cursor-pointer enabled:hover:bg-slate-50 dark:enabled:hover:bg-primary/10 transition-colors"
                             >
-                                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                <Icon name="chevron_left" size={14} />
                             </button>
                             <button
                                 onClick={() => setPage((p) => p + 1)}
                                 disabled={!hasNext}
                                 className="p-1.5 rounded bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/20 disabled:opacity-50 cursor-not-allowed disabled:cursor-not-allowed enabled:cursor-pointer enabled:hover:bg-slate-50 dark:enabled:hover:bg-primary/10 transition-colors"
                             >
-                                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                <Icon name="chevron_right" size={14} />
                             </button>
                         </div>
                     </div>

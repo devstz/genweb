@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
+import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
 
 interface CategoryDropdownProps {
@@ -33,7 +35,7 @@ export function CategoryDropdown({
     }, []);
 
     return (
-        <div ref={ref} className={`relative ${className}`}>
+        <div ref={ref} className={cn('relative', className)}>
             <button
                 type="button"
                 disabled={disabled}
@@ -41,9 +43,7 @@ export function CategoryDropdown({
                 className="w-full flex items-center justify-between gap-2 bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl px-3 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-primary transition-colors disabled:opacity-50"
             >
                 <span className={value ? '' : 'text-slate-400'}>{value || placeholder}</span>
-                <span className="material-symbols-outlined text-slate-400 text-lg transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'none' }}>
-                    expand_more
-                </span>
+                <Icon name="expand_more" size={20} className={cn('text-slate-400 shrink-0 transition-transform duration-200', open && 'rotate-180')} />
             </button>
             {open && (
                 <div className="absolute top-full left-0 right-0 mt-1 py-1 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">

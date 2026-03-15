@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { useState, useRef } from 'react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
@@ -122,7 +123,7 @@ export default function MailingsPage() {
                                 </div>
                                 <div className="flex items-stretch gap-4 flex-1 min-h-0">
                                     <div className="hidden md:flex size-12 rounded-full bg-primary/10 items-center justify-center shrink-0">
-                                        <span className="material-symbols-outlined text-primary">edit_note</span>
+                                        <Icon name="edit_note" size={24} className="text-primary" />
                                     </div>
                                     <div className="flex-1 min-w-0 flex flex-col min-h-0">
                                         {showPreview ? (
@@ -147,25 +148,25 @@ export default function MailingsPage() {
                             <div className="bg-slate-50 dark:bg-primary/5 px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 dark:border-primary/20">
                                 <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-start flex-wrap">
                                     <button type="button" onClick={() => handleFormat('*', '*')} className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer font-bold" title="Жирный (*текст*)">
-                                        <span className="material-symbols-outlined">format_bold</span>
+                                        <Icon name="format_bold" size={20} />
                                     </button>
                                     <button type="button" onClick={() => handleFormat('_', '_')} className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer italic" title="Курсив (_текст_)">
-                                        <span className="material-symbols-outlined">format_italic</span>
+                                        <Icon name="format_italic" size={20} />
                                     </button>
                                     <button type="button" onClick={() => handleFormat('`', '`')} className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Код (`код`)">
-                                        <span className="material-symbols-outlined">code</span>
+                                        <Icon name="code" size={20} />
                                     </button>
                                     <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Добавить фото">
-                                        <span className="material-symbols-outlined">image</span>
+                                        <Icon name="image" size={20} />
                                     </button>
                                     <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Добавить видео">
-                                        <span className="material-symbols-outlined">videocam</span>
+                                        <Icon name="videocam" size={20} />
                                     </button>
                                     <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Смайлы">
-                                        <span className="material-symbols-outlined">mood</span>
+                                        <Icon name="mood" size={20} />
                                     </button>
                                     <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Прикрепить файл">
-                                        <span className="material-symbols-outlined">attach_file</span>
+                                        <Icon name="attach_file" size={20} />
                                     </button>
                                 </div>
                                 <button
@@ -174,11 +175,11 @@ export default function MailingsPage() {
                                     className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSending ? (
-                                        <span className="material-symbols-outlined animate-spin text-sm">autorenew</span>
+                                        <Icon name="autorenew" size={14} className="animate-spin" />
                                     ) : (
                                         <>
                                             <span>Запустить рассылку</span>
-                                            <span className="material-symbols-outlined text-sm">rocket_launch</span>
+                                            <Icon name="rocket_launch" size={14} />
                                         </>
                                     )}
                                 </button>
@@ -197,7 +198,7 @@ export default function MailingsPage() {
                                         className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-primary/20 hover:bg-slate-50 dark:hover:bg-primary/5 cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <span className="material-symbols-outlined text-slate-400">{opt.icon}</span>
+                                            <Icon name={opt.icon} size={20} className="text-slate-400" />
                                             <span className="text-sm font-medium">{opt.label}</span>
                                         </div>
                                         <input
@@ -279,9 +280,7 @@ export default function MailingsPage() {
                                             <span>·</span>
                                             <span className="text-slate-500 dark:text-slate-400">{m.recipient_count} чел.</span>
                                         </div>
-                                        <span className={`material-symbols-outlined shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}>
-                                            expand_more
-                                        </span>
+                                        <Icon name="expand_more" size={24} className={`shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
                                     </button>
                                     {expanded && (
                                         <div className="px-4 pb-4 pt-0">

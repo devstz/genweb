@@ -6,14 +6,16 @@ export interface MetricCardProps {
     icon?: string;
 }
 
+import { Icon } from '@/components/admin/Icon';
+
 export function MetricCard({ title, value, change, isPositive, icon = "bar_chart" }: MetricCardProps) {
     const trendColorClass = isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10';
 
     return (
         <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-100 dark:border-border-dark shadow-sm transition-all hover:shadow-md">
             <div className="flex items-center justify-between mb-4">
-                <span className="p-2 rounded-lg bg-primary/10 text-primary material-symbols-outlined">
-                    {icon}
+                <span className="p-2 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <Icon name={icon} size={20} />
                 </span>
                 <span className={`${trendColorClass} text-xs font-bold px-2 py-1 rounded-full`}>
                     {change}

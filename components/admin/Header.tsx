@@ -1,5 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
+
 interface HeaderProps {
     title?: string;
     subtitle?: string;
@@ -17,7 +19,7 @@ export function Header({ title = "Обзор дашборда", subtitle = "Ме
                         className="md:hidden size-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-100 shrink-0"
                         aria-label="Открыть меню"
                     >
-                        <span className="material-symbols-outlined">menu</span>
+                        <Icon name="menu" size={24} />
                     </button>
                 )}
                 <div className="flex flex-col min-w-0">
@@ -28,7 +30,7 @@ export function Header({ title = "Обзор дашборда", subtitle = "Ме
 
             <div className="flex items-center gap-2 md:gap-4 shrink-0">
                 <button className="size-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-100 relative transition-colors hover:opacity-80">
-                    <span className="material-symbols-outlined">notifications</span>
+                    <Icon name="notifications" size={24} />
                     <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-background-light dark:border-background-dark"></span>
                 </button>
             </div>

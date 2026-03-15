@@ -37,11 +37,13 @@ export default function LoginPage() {
     if (!mounted) return null;
 
     return (
-        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4 sm:p-8">
+        <div className="min-h-dvh flex flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4 sm:p-8">
             <div className="w-full max-w-[400px] bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-[2rem] shadow-2xl flex flex-col items-center p-8 sm:p-10 relative z-10">
                 {/* Icon */}
                 <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6">
-                    <span className="material-symbols-outlined text-3xl">smart_toy</span>
+                    <svg className="size-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M8 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm1 3H7a1 1 0 0 1-1-1v-4h12v4a1 1 0 0 1-1 1Zm-1-8V5a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v1H7a2 2 0 0 0-2 2v1h14V9a2 2 0 0 0-2-2h-1Z" />
+                    </svg>
                 </div>
 
                 {/* Title */}
@@ -54,7 +56,7 @@ export default function LoginPage() {
                 <div className="w-full max-w-[220px] aspect-square rounded-[2rem] bg-white dark:bg-background-dark border border-slate-200 dark:border-border-dark p-4 sm:p-5 mb-8 flex items-center justify-center shadow-inner relative overflow-hidden group">
                     {isLoading ? (
                         <div className="flex flex-col items-center gap-2 text-slate-400">
-                            <span className="material-symbols-outlined animate-spin text-3xl">autorenew</span>
+                            <div className="size-10 border-2 border-slate-200 dark:border-slate-600 border-t-slate-500 dark:border-t-slate-400 rounded-full animate-spin" aria-hidden />
                             <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Загрузка</span>
                         </div>
                     ) : telegramLink ? (
@@ -70,7 +72,11 @@ export default function LoginPage() {
                         </div>
                     ) : status === 'rejected' ? (
                         <div className="flex flex-col items-center text-red-500">
-                            <span className="material-symbols-outlined text-4xl mb-2">cancel</span>
+                            <svg className="size-10 mb-2 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="m15 9-6 6" />
+                                <path d="m9 9 6 6" />
+                            </svg>
                             <span className="text-[10px] font-bold uppercase tracking-widest text-center mt-1">Доступ запрещен</span>
                         </div>
                     ) : error ? (
@@ -78,7 +84,9 @@ export default function LoginPage() {
                             {error}
                         </div>
                     ) : (
-                        <span className="material-symbols-outlined text-5xl text-slate-200 dark:text-border-dark">qr_code_2</span>
+                        <svg className="size-14 text-slate-200 dark:text-border-dark shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                            <path d="M3 3h4v4H3V3zm6 0h4v4H9V3zm-6 6h4v4H3V9zm6 0h4v4H9V9zm0-6h6v2h-2v2h2v2h-2v2h-2v-4H9V3h4V1H9v2zm6 4h2v2h-2V9zm0 4h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 0h2v2h-2v-2zm-6 2h2v2H9v-2zm4 0h2v2h-2v-2z" />
+                        </svg>
                     )}
                 </div>
 
@@ -93,10 +101,13 @@ export default function LoginPage() {
                     className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm tracking-wide transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                 >
                     {isLoading ? (
-                        <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                        <div className="size-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin shrink-0" aria-hidden />
                     ) : (
                         <>
-                            <span className="material-symbols-outlined text-xl">send</span>
+                            <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                <path d="m22 2-7 20-4-9-9-4Z" />
+                                <path d="M22 2 11 13" />
+                            </svg>
                             Войти через Telegram
                         </>
                     )}
@@ -104,8 +115,10 @@ export default function LoginPage() {
 
                 {/* Security Note */}
                 <div className="mt-5 flex items-center gap-1.5 opacity-60 justify-center">
-                    <span className="material-symbols-outlined text-[14px] text-emerald-500 font-bold">verified_user</span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">Защищено протоколом v2.0</span>
+                    <svg className="size-3.5 shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                    </svg>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Защищено протоколом v2.0</span>
                 </div>
             </div>
 

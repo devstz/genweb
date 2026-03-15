@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { useProfile } from '@/hooks/useProfile';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
@@ -34,7 +35,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 onClick={() => onClose?.()}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${isActive ? 'bg-primary text-primary-foreground' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10'}`}
             >
-                <span className="material-symbols-outlined">{icon}</span>
+                <Icon name={icon} size={24} />
                 <span className="text-sm font-medium">{label}</span>
             </Link>
         );
@@ -76,7 +77,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             <div className="p-6 flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="bg-primary rounded-lg p-2 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-primary-foreground">smart_toy</span>
+                        <Icon name="smart_toy" size={24} className="text-primary-foreground" />
                     </div>
                     <div className="min-w-0">
                         <h1 className="font-bold text-lg leading-none truncate">Бот Админ</h1>
@@ -90,7 +91,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                         className="md:hidden size-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-surface-dark shrink-0"
                         aria-label="Закрыть меню"
                     >
-                        <span className="material-symbols-outlined">close</span>
+                        <Icon name="close" size={24} />
                     </button>
                 )}
             </div>
@@ -140,7 +141,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                             aria-expanded={dropdownOpen}
                             aria-haspopup="true"
                         >
-                            <span className="material-symbols-outlined text-lg">more_vert</span>
+                            <Icon name="more_vert" size={20} />
                         </button>
                         {dropdownOpen && (
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl shadow-xl z-50">
@@ -150,7 +151,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                                         className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                         onClick={() => setDropdownOpen(false)}
                                     >
-                                        <span className="material-symbols-outlined text-lg">send</span>
+                                        <Icon name="send" size={20} />
                                         Перейти в бот
                                     </a>
                                 )}
@@ -162,7 +163,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                                     }}
                                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                                 >
-                                    <span className="material-symbols-outlined text-lg">logout</span>
+                                    <Icon name="logout" size={20} />
                                     Выйти
                                 </button>
                             </div>

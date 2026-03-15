@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { useState, useMemo } from 'react';
 import { Template } from '@/lib/types/templates';
 import { useTemplates } from '@/hooks/useTemplates';
@@ -97,7 +98,7 @@ export default function TemplateGallery() {
         return (
             <div className="space-y-6 animate-in fade-in duration-300">
                 <button onClick={handleCloseForm} className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-medium text-sm">
-                    <span className="material-symbols-outlined text-sm">arrow_back</span> Назад к галерее
+                    <Icon name="arrow_back" size={14} /> Назад к галерее
                 </button>
 
                 <div>
@@ -134,7 +135,7 @@ export default function TemplateGallery() {
                                 <div>
                                     <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Превью</label>
                                     <div className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-6 md:p-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center">
-                                        <span className="material-symbols-outlined text-slate-400 text-3xl md:text-4xl mb-2">upload_file</span>
+                                        <Icon name="upload_file" size={40} className="text-slate-400 mb-2" />
                                         <p className="text-xs md:text-sm text-slate-500">Нажмите для загрузки изображения</p>
                                     </div>
                                 </div>
@@ -200,7 +201,7 @@ export default function TemplateGallery() {
     if (isLoading && templates.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-[300px]">
-                <span className="material-symbols-outlined animate-spin text-4xl text-primary">autorenew</span>
+                <Icon name="autorenew" size={40} className="animate-spin text-primary" />
             </div>
         );
     }
@@ -214,7 +215,7 @@ export default function TemplateGallery() {
             )}
             {/* Search — visible on all screens */}
             <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                     className="w-full md:w-72 lg:w-80 pl-9 pr-4 py-2 bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg focus:ring-2 focus:ring-primary text-sm"
                     placeholder="Поиск шаблонов..."
@@ -228,7 +229,7 @@ export default function TemplateGallery() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400">Управляйте, организуйте и развертывайте шаблоны ответов.</p>
                 <button onClick={() => handleOpenForm()} className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 md:px-6 py-2 md:py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 text-sm md:text-base w-full sm:w-auto">
-                    <span className="material-symbols-outlined text-sm md:text-base">add</span> Новый шаблон
+                    <Icon name="add" size={16} /> Новый шаблон
                 </button>
             </div>
 
@@ -236,7 +237,7 @@ export default function TemplateGallery() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex overflow-x-auto scrollbar-thin items-center gap-2 pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 md:flex-wrap w-full md:w-auto">
                     <button className="shrink-0 flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-primary/10 border border-primary/20 text-primary rounded-full text-xs md:text-sm font-semibold">
-                        <span className="material-symbols-outlined text-sm">tune</span> Фильтр
+                        <Icon name="tune" size={14} /> Фильтр
                     </button>
                     <div className="hidden md:block h-6 w-px bg-slate-200 dark:bg-border-dark mx-1"></div>
                     {['Все', ...categories].map(cat => (
@@ -276,15 +277,15 @@ export default function TemplateGallery() {
                             <div className="flex justify-between items-start mb-1 md:mb-2">
                                 <h3 className="font-bold text-base md:text-lg leading-tight line-clamp-1">{template.title}</h3>
                                 <button className="text-slate-400 hover:text-primary -mr-2">
-                                    <span className="material-symbols-outlined">more_vert</span>
+                                    <Icon name="more_vert" size={20} />
                                 </button>
                             </div>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 md:mb-4 line-clamp-2 flex-1">{template.description}</p>
                             <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-100 dark:border-border-dark mt-auto">
                                 <span className="text-[10px] md:text-xs bg-slate-100 dark:bg-primary/10 px-2 py-1 rounded text-slate-600 dark:text-slate-400 uppercase font-bold tracking-tighter truncate max-w-[50%]">{template.category}</span>
                                 <div className="flex gap-1 md:gap-2">
-                                    <button onClick={() => handleOpenForm(template)} className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><span className="material-symbols-outlined text-sm md:text-base">edit</span></button>
-                                    <button onClick={(e) => handleDelete(template.id, e)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"><span className="material-symbols-outlined text-sm md:text-base">delete</span></button>
+                                    <button onClick={() => handleOpenForm(template)} className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"><Icon name="edit" size={16} /></button>
+                                    <button onClick={(e) => handleDelete(template.id, e)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"><Icon name="delete" size={16} /></button>
                                 </div>
                             </div>
                         </div>
@@ -294,7 +295,7 @@ export default function TemplateGallery() {
                 {/* Add New Card Placeholder */}
                 <div onClick={() => handleOpenForm()} className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex flex-col items-center justify-center p-6 md:p-8 hover:bg-primary/5 transition-colors cursor-pointer group min-h-[200px]">
                     <div className="size-10 md:size-12 rounded-full bg-slate-100 dark:bg-primary/10 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/20 transition-all mb-3 md:mb-4">
-                        <span className="material-symbols-outlined text-2xl md:text-3xl font-light">add</span>
+                        <Icon name="add" size={28} />
                     </div>
                     <p className="font-bold text-sm md:text-base text-slate-500 dark:text-slate-400 group-hover:text-primary">Создать шаблон</p>
                 </div>

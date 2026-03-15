@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/admin/Icon';
 import { MetricCard } from '@/components/admin/MetricCard';
 import { TemplateListCard } from '@/components/admin/TemplateListCard';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -12,7 +13,7 @@ export default function DashboardPage() {
     if (isLoading && !data) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <span className="material-symbols-outlined animate-spin text-4xl text-primary">autorenew</span>
+                <Icon name="autorenew" size={40} className="animate-spin text-primary" />
             </div>
         );
     }
@@ -94,7 +95,7 @@ export default function DashboardPage() {
                     <div className="relative overflow-x-auto overflow-y-visible scrollbar-thin">
                         {isLoading && (
                             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-surface-dark/80 rounded-lg">
-                                <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
+                                <Icon name="autorenew" size={32} className="animate-spin text-primary" />
                             </div>
                         )}
                         <div 
@@ -225,7 +226,7 @@ export default function DashboardPage() {
                         {data.systemHealth.map((item, i) => (
                             <div key={item.label || i} className="flex items-center gap-3">
                                 <div className={`size-10 rounded-lg bg-emerald-500/10 ${item.iconColor || 'text-emerald-500'} flex items-center justify-center`}>
-                                    <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                                    <Icon name={item.icon} size={20} />
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold">{healthLabels[item.label] || item.label}</p>
