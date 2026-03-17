@@ -71,10 +71,29 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         setIsSubmittingSetup(true);
         setSetupError(null);
         try {
-            await api.post('/admin/auth/credentials/setup', {
+            const payload = {
                 login: setupLogin.trim(),
                 password: setupPassword,
-            });
+            };
+
+            try {
+                await api.post('/admin/auth/credentials/setup', payload);
+            } catch (err: unknown) {
+                if (!axios.isAxiosError(err) || err.response?.status !== 404) {
+                    throw err;
+                }
+
+                try {
+                    await api.post('/admin/auth/credentials/bind', payload);
+                } catch (bindErr: unknown) {
+                    if (axios.isAxiosError(bindErr) && bindErr.response?.status === 404) {
+                        setSetupError('На API не найден endpoint setup/bind. Обновите backend.');
+                        return;
+                    }
+                    throw bindErr;
+                }
+            }
+
             invalidateProfileCache();
             setRequireCredentialsSetup(false);
         } catch (err: unknown) {
