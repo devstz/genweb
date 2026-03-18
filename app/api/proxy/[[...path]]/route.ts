@@ -26,6 +26,23 @@ function getForwardHeaders(req: NextRequest): Record<string, string> {
   return headers;
 }
 
+function normalizeJsonBody(rawBody: string): string {
+  try {
+    const firstParse: unknown = JSON.parse(rawBody);
+    if (typeof firstParse === 'string') {
+      try {
+        const secondParse: unknown = JSON.parse(firstParse);
+        return JSON.stringify(secondParse);
+      } catch {
+        return JSON.stringify(firstParse);
+      }
+    }
+    return JSON.stringify(firstParse);
+  } catch {
+    return rawBody;
+  }
+}
+
 async function proxy(
   req: NextRequest,
   path: string[] | undefined,
@@ -33,19 +50,22 @@ async function proxy(
 ): Promise<NextResponse> {
   const url = buildBackendUrl(path, req.nextUrl.searchParams);
   const headers = getForwardHeaders(req);
+  const contentType = headers['content-type'] ?? 'application/json';
 
   const init: RequestInit = {
     method,
     headers: {
       ...headers,
-      'Content-Type': headers['content-type'] ?? 'application/json',
+      'Content-Type': contentType,
     },
   };
 
   if (['POST', 'PUT', 'PATCH'].includes(method)) {
     try {
-      const body = await req.text();
-      if (body) {
+      const rawBody = await req.text();
+      if (rawBody) {
+        const isJson = contentType.toLowerCase().includes('application/json');
+        const body = isJson ? normalizeJsonBody(rawBody) : rawBody;
         (init as RequestInit & { body: string }).body = body;
       }
     } catch {

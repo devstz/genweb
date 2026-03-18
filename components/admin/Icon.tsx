@@ -12,6 +12,7 @@ import {
     ChevronRight,
     CircleHelp,
     Clock,
+    Copy,
     Code,
     CreditCard,
     Crown,
@@ -53,6 +54,7 @@ import {
     Users,
     UserPlus,
     Video,
+    Check,
     X,
     Zap,
     type LucideIcon,
@@ -120,6 +122,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
     redeem: Gift,
     card_giftcard: Gift,
     local_offer: Tag,
+    content_copy: Copy,
+    check: Check,
 };
 
 export interface IconProps {

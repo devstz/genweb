@@ -102,6 +102,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 {navLink('/mailings', 'Рассылка', 'mail')}
                 {navLink('/prices', 'Цены', 'payments')}
                 {navLink('/logs', 'Логи', 'history')}
+                {navLink('/utm', 'UTM-метки', 'campaign')}
                 <div className="pt-4 mt-4 border-t border-slate-200 dark:border-border-dark">
                     {navLink('/settings', 'Настройки', 'settings')}
                 </div>

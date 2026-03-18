@@ -14,6 +14,7 @@ const ROUTE_TITLES: Record<string, { title: string; subtitle?: string }> = {
     '/mailings': { title: 'Рассылка новостей', subtitle: 'Создайте и отправьте сообщение пользователям' },
     '/prices': { title: 'Цены', subtitle: 'Управление тарифными пакетами' },
     '/logs': { title: 'Логи генераций', subtitle: 'История последних запросов' },
+    '/utm': { title: 'UTM-метки', subtitle: 'Аналитика рекламных кампаний' },
     '/settings': { title: 'Настройки', subtitle: 'Параметры профиля и безопасности' },
 };
 
@@ -59,7 +60,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         setSidebarOpen(false);
     }, [pathname]);
 
-    const { title, subtitle } = ROUTE_TITLES[pathname] ?? { title: 'Обзор показателей', subtitle: 'Метрики в реальном времени' };
+    const isUtmDetails = pathname.startsWith('/utm/');
+    const { title, subtitle } = isUtmDetails
+        ? { title: 'UTM-метка', subtitle: 'Детальная аналитика кампании' }
+        : ROUTE_TITLES[pathname] ?? { title: 'Обзор показателей', subtitle: 'Метрики в реальном времени' };
 
     const submitCredentialsSetup = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
