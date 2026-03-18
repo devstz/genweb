@@ -28,16 +28,19 @@ function getForwardHeaders(req: NextRequest): Record<string, string> {
 
 function normalizeJsonBody(rawBody: string): string {
   try {
-    const firstParse: unknown = JSON.parse(rawBody);
-    if (typeof firstParse === 'string') {
+    let parsedBody: unknown = JSON.parse(rawBody);
+
+    // Some clients may double-encode JSON payloads (`"{\"key\":\"value\"}"`).
+    // Unwrap nested JSON strings a few times to recover the actual object.
+    for (let i = 0; i < 3; i += 1) {
+      if (typeof parsedBody !== 'string') break;
       try {
-        const secondParse: unknown = JSON.parse(firstParse);
-        return JSON.stringify(secondParse);
+        parsedBody = JSON.parse(parsedBody);
       } catch {
-        return JSON.stringify(firstParse);
+        break;
       }
     }
-    return JSON.stringify(firstParse);
+    return JSON.stringify(parsedBody);
   } catch {
     return rawBody;
   }

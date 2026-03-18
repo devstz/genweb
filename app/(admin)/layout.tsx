@@ -108,7 +108,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             }
 
             if (axios.isAxiosError(err)) {
-                setSetupError((err.response?.data?.detail as string) || 'Не удалось сохранить данные.');
+                if (err.response?.status === 422) {
+                    setSetupError('Неверный формат данных, попробуйте снова.');
+                    return;
+                }
+
+                const detail = err.response?.data?.detail;
+                if (typeof detail === 'string' && detail.trim()) {
+                    setSetupError(detail);
+                    return;
+                }
+
+                setSetupError('Не удалось сохранить данные.');
                 return;
             }
             setSetupError('Не удалось сохранить данные.');
