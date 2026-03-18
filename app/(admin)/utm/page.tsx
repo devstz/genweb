@@ -2,6 +2,7 @@
 
 import { Icon } from '@/components/admin/Icon';
 import { useUtmCampaigns } from '@/hooks/useUtmCampaigns';
+import { generateStartCode } from '@/lib/start-code';
 import { useUtmSummary } from '@/hooks/useUtmStats';
 import type { UtmCreatePayload } from '@/lib/types/utm';
 import Link from 'next/link';
@@ -354,13 +355,27 @@ export default function UtmPage() {
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Start параметр</label>
-                                <input
-                                    type="text"
-                                    value={formData.start_code}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, start_code: e.target.value }))}
-                                    className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-4 py-3 font-mono text-sm"
-                                    placeholder="autumn_sale"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={formData.start_code}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, start_code: e.target.value }))}
+                                        className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-4 py-3 font-mono text-sm"
+                                        placeholder="autumn_sale"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                start_code: generateStartCode(prev.name),
+                                            }))
+                                        }
+                                        className="shrink-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-border-dark text-xs font-bold uppercase tracking-wide hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        Генер.
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
@@ -368,6 +383,7 @@ export default function UtmPage() {
                                 <input placeholder="utm_medium" value={formData.utm_medium} onChange={(e) => setFormData((p) => ({ ...p, utm_medium: e.target.value }))} className="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-3 py-2 text-sm" />
                                 <input placeholder="utm_campaign" value={formData.utm_campaign} onChange={(e) => setFormData((p) => ({ ...p, utm_campaign: e.target.value }))} className="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-3 py-2 text-sm" />
                                 <input placeholder="utm_content" value={formData.utm_content} onChange={(e) => setFormData((p) => ({ ...p, utm_content: e.target.value }))} className="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-3 py-2 text-sm" />
+                                <input placeholder="utm_term" value={formData.utm_term} onChange={(e) => setFormData((p) => ({ ...p, utm_term: e.target.value }))} className="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-xl px-3 py-2 text-sm col-span-2" />
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3">

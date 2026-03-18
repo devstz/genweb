@@ -2,6 +2,7 @@
 
 import { Icon } from '@/components/admin/Icon';
 import { api } from '@/lib/axios';
+import { generateStartCode } from '@/lib/start-code';
 import type { UtmCampaign } from '@/lib/types/utm';
 import axios from 'axios';
 import Link from 'next/link';
@@ -32,6 +33,11 @@ export default function UtmDetailsPage() {
     const [copied, setCopied] = useState(false);
     const [editName, setEditName] = useState('');
     const [editStartCode, setEditStartCode] = useState('');
+    const [editUtmSource, setEditUtmSource] = useState('');
+    const [editUtmMedium, setEditUtmMedium] = useState('');
+    const [editUtmCampaign, setEditUtmCampaign] = useState('');
+    const [editUtmContent, setEditUtmContent] = useState('');
+    const [editUtmTerm, setEditUtmTerm] = useState('');
 
     const {
         stats,
@@ -77,6 +83,11 @@ export default function UtmDetailsPage() {
                 setCampaign(data);
                 setEditName(data.name);
                 setEditStartCode(data.start_code);
+                setEditUtmSource(data.utm_source ?? '');
+                setEditUtmMedium(data.utm_medium ?? '');
+                setEditUtmCampaign(data.utm_campaign ?? '');
+                setEditUtmContent(data.utm_content ?? '');
+                setEditUtmTerm(data.utm_term ?? '');
             } catch (err: unknown) {
                 if (axios.isAxiosError(err)) {
                     setCampaignError((err.response?.data?.detail as string) || err.message);
@@ -106,6 +117,10 @@ export default function UtmDetailsPage() {
         if (!campaign) return;
         const trimmedName = editName.trim();
         const trimmedStartCode = editStartCode.trim();
+        const normalizeOptional = (value: string) => {
+            const trimmed = value.trim();
+            return trimmed.length ? trimmed : null;
+        };
         if (!trimmedName || !trimmedStartCode) {
             setActionError('Название и start параметр обязательны.');
             return;
@@ -115,8 +130,20 @@ export default function UtmDetailsPage() {
             const { data } = await api.put<UtmCampaign>(`/admin/utm/${campaign.id}`, {
                 name: trimmedName,
                 start_code: trimmedStartCode,
+                utm_source: normalizeOptional(editUtmSource),
+                utm_medium: normalizeOptional(editUtmMedium),
+                utm_campaign: normalizeOptional(editUtmCampaign),
+                utm_content: normalizeOptional(editUtmContent),
+                utm_term: normalizeOptional(editUtmTerm),
             });
             setCampaign(data);
+            setEditName(data.name);
+            setEditStartCode(data.start_code);
+            setEditUtmSource(data.utm_source ?? '');
+            setEditUtmMedium(data.utm_medium ?? '');
+            setEditUtmCampaign(data.utm_campaign ?? '');
+            setEditUtmContent(data.utm_content ?? '');
+            setEditUtmTerm(data.utm_term ?? '');
             setIsEditModalOpen(false);
             setActionError(null);
             setActionSuccess('Изменения сохранены.');
@@ -367,7 +394,48 @@ export default function UtmDetailsPage() {
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Start параметр</label>
-                                <input value={editStartCode} onChange={(e) => setEditStartCode(e.target.value)} className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 font-mono text-sm" />
+                                <div className="flex items-center gap-2">
+                                    <input value={editStartCode} onChange={(e) => setEditStartCode(e.target.value)} className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 font-mono text-sm" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditStartCode(generateStartCode(editName))}
+                                        className="shrink-0 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-border-dark text-xs font-bold uppercase tracking-wide hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        Генер.
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <input
+                                    placeholder="utm_source"
+                                    value={editUtmSource}
+                                    onChange={(e) => setEditUtmSource(e.target.value)}
+                                    className="bg-background-dark border border-border-dark rounded-xl px-3 py-2 text-sm"
+                                />
+                                <input
+                                    placeholder="utm_medium"
+                                    value={editUtmMedium}
+                                    onChange={(e) => setEditUtmMedium(e.target.value)}
+                                    className="bg-background-dark border border-border-dark rounded-xl px-3 py-2 text-sm"
+                                />
+                                <input
+                                    placeholder="utm_campaign"
+                                    value={editUtmCampaign}
+                                    onChange={(e) => setEditUtmCampaign(e.target.value)}
+                                    className="bg-background-dark border border-border-dark rounded-xl px-3 py-2 text-sm"
+                                />
+                                <input
+                                    placeholder="utm_content"
+                                    value={editUtmContent}
+                                    onChange={(e) => setEditUtmContent(e.target.value)}
+                                    className="bg-background-dark border border-border-dark rounded-xl px-3 py-2 text-sm"
+                                />
+                                <input
+                                    placeholder="utm_term"
+                                    value={editUtmTerm}
+                                    onChange={(e) => setEditUtmTerm(e.target.value)}
+                                    className="bg-background-dark border border-border-dark rounded-xl px-3 py-2 text-sm col-span-2"
+                                />
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3">
