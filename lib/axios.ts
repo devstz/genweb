@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Запросы идут через Next.js API proxy (same-origin), бэкенд настраивается через API_BACKEND_URL на сервере
+// Запросы идут через Next.js rewrites (same-origin), бэкенд настраивается через API_BACKEND_URL на сервере
 const API_BASE = '/api/proxy/api/v1';
 
 export const api = axios.create({

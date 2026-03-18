@@ -109,7 +109,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 422) {
-                    setSetupError('Неверный формат данных, попробуйте снова.');
+                    setSetupError(
+                        'API отклонил формат body (ожидался JSON-объект с login/password). Обновите страницу и попробуйте снова.'
+                    );
                     return;
                 }
 
