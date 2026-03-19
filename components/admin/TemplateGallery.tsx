@@ -172,7 +172,7 @@ export default function TemplateGallery() {
                                         value={formData.description || ''}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                                         className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3 md:p-4 resize-none"
-                                        placeholder="Опишите, что делает этот шаблон и какой ответ ожидается от бота. Бот подставит {name} и {emotion} автоматически."
+                                        placeholder="Опишите базовый промпт шаблона. Для пользовательского уточнения вставьте {additional_text}."
                                         rows={5}
                                     ></textarea>
                                 </div>

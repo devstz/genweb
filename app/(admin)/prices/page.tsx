@@ -5,13 +5,19 @@ import { useState } from 'react';
 import { PackCard } from '@/components/admin/PackCard';
 import { IconPicker } from '@/components/admin/IconPicker';
 import { usePacks } from '@/hooks/usePacks';
-import type { Pack } from '@/lib/types/packs';
+import type { LavaOffer, Pack } from '@/lib/types/packs';
+import { api } from '@/lib/axios';
+import axios from 'axios';
 
 export default function PricesPage() {
     const { packs, isLoading, error, createPack, updatePack, deletePack, togglePack, togglingId } = usePacks();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPack, setEditingPack] = useState<Pack | null>(null);
     const [formData, setFormData] = useState<Partial<Pack>>({});
+    const [isLavaModalOpen, setIsLavaModalOpen] = useState(false);
+    const [lavaOffers, setLavaOffers] = useState<LavaOffer[]>([]);
+    const [lavaLoading, setLavaLoading] = useState(false);
+    const [lavaError, setLavaError] = useState<string | null>(null);
 
     const handleOpenForm = (pack?: Pack) => {
         if (pack) {
@@ -24,6 +30,7 @@ export default function PricesPage() {
                 icon: pack.icon ?? 'payments',
                 is_active: pack.is_active,
                 is_bestseller: pack.is_bestseller,
+                lava_offer_id: pack.lava_offer_id ?? '',
             });
         } else {
             setEditingPack(null);
@@ -35,6 +42,7 @@ export default function PricesPage() {
                 icon: 'payments',
                 is_active: true,
                 is_bestseller: false,
+                lava_offer_id: '',
             });
         }
         setIsFormOpen(true);
@@ -55,6 +63,7 @@ export default function PricesPage() {
             icon: formData.icon ?? 'payments',
             is_active: formData.is_active ?? true,
             is_bestseller: formData.is_bestseller ?? false,
+            lava_offer_id: formData.lava_offer_id?.trim() || undefined,
         };
         if (editingPack) {
             const ok = await updatePack(editingPack.id, payload);
@@ -68,6 +77,62 @@ export default function PricesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Вы уверены, что хотите удалить этот пакет?')) return;
         await deletePack(id);
+    };
+
+    const fetchLavaOffers = async () => {
+        setLavaLoading(true);
+        setLavaError(null);
+        try {
+            const { data } = await api.get('/admin/lava/products');
+            const items = Array.isArray(data?.items) ? data.items : [];
+            const offers: LavaOffer[] = [];
+
+            items.forEach((item: unknown) => {
+                if (!item || typeof item !== 'object') return;
+                const itemObj = item as Record<string, unknown>;
+                const product =
+                    itemObj.data && typeof itemObj.data === 'object'
+                        ? (itemObj.data as Record<string, unknown>)
+                        : itemObj;
+                const productId = String(product.id ?? '');
+                const productTitle = String(product.title ?? 'Без названия');
+                const productOffers = Array.isArray(product.offers) ? product.offers : [];
+                productOffers.forEach((offer: unknown) => {
+                    if (!offer || typeof offer !== 'object') return;
+                    const offerObj = offer as Record<string, unknown>;
+                    const prices = Array.isArray(offerObj.prices) ? offerObj.prices : [];
+                    const firstPrice = prices[0] ?? null;
+                    const firstPriceObj =
+                        firstPrice && typeof firstPrice === 'object' ? (firstPrice as Record<string, unknown>) : null;
+                    const amountValue = typeof firstPriceObj?.amount === 'number' ? firstPriceObj.amount : null;
+                    const currencyValue = typeof firstPriceObj?.currency === 'string' ? firstPriceObj.currency : null;
+                    offers.push({
+                        productId,
+                        productTitle,
+                        offerId: String(offerObj.id ?? ''),
+                        offerName: String(offerObj.name ?? 'Offer'),
+                        amount: amountValue,
+                        currency: currencyValue,
+                    });
+                });
+            });
+
+            setLavaOffers(offers.filter((offer) => offer.offerId));
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setLavaError((err.response?.data?.detail as string) || 'Не удалось загрузить продукты Lava.top.');
+            } else {
+                setLavaError('Не удалось загрузить продукты Lava.top.');
+            }
+            setLavaOffers([]);
+        } finally {
+            setLavaLoading(false);
+        }
+    };
+
+    const openLavaModal = async () => {
+        setIsLavaModalOpen(true);
+        await fetchLavaOffers();
     };
 
     if (isFormOpen) {
@@ -139,6 +204,25 @@ export default function PricesPage() {
                                 </div>
                             </div>
                             <div>
+                                <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Lava.top Offer ID</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        value={formData.lava_offer_id ?? ''}
+                                        onChange={(e) => setFormData({ ...formData, lava_offer_id: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3 font-mono"
+                                        placeholder="UUID offerId из Lava.top"
+                                        type="text"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={openLavaModal}
+                                        className="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:opacity-90"
+                                    >
+                                        Выбрать
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
                                 <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Иконка</label>
                                 <IconPicker
                                     value={formData.icon ?? 'payments'}
@@ -183,6 +267,66 @@ export default function PricesPage() {
                         </div>
                     </form>
                 </div>
+
+                {isLavaModalOpen && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                        <div className="w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 max-h-[80vh] overflow-hidden flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-lg font-bold">Выбор offerId из Lava.top</h4>
+                                <button onClick={() => setIsLavaModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                                    ✕
+                                </button>
+                            </div>
+                            {lavaLoading ? (
+                                <p className="text-sm text-slate-500">Загрузка...</p>
+                            ) : lavaError ? (
+                                <p className="text-sm text-red-500">{lavaError}</p>
+                            ) : lavaOffers.length === 0 ? (
+                                <p className="text-sm text-slate-500">Офферы не найдены.</p>
+                            ) : (
+                                <div className="overflow-auto border border-slate-200 dark:border-slate-700 rounded-xl">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-slate-50 dark:bg-slate-800">
+                                            <tr>
+                                                <th className="text-left p-3">Продукт</th>
+                                                <th className="text-left p-3">Оффер</th>
+                                                <th className="text-left p-3">Цена</th>
+                                                <th className="text-left p-3">Offer ID</th>
+                                                <th className="text-left p-3" />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {lavaOffers.map((offer) => (
+                                                <tr key={offer.offerId} className="border-t border-slate-100 dark:border-slate-800">
+                                                    <td className="p-3">{offer.productTitle}</td>
+                                                    <td className="p-3">{offer.offerName}</td>
+                                                    <td className="p-3">{offer.amount ?? '—'} {offer.currency ?? ''}</td>
+                                                    <td className="p-3 font-mono text-xs">{offer.offerId}</td>
+                                                    <td className="p-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setFormData((prev) => ({
+                                                                    ...prev,
+                                                                    lava_offer_id: offer.offerId,
+                                                                    ...(offer.amount != null ? { price: offer.amount } : {}),
+                                                                }));
+                                                                setIsLavaModalOpen(false);
+                                                            }}
+                                                            className="px-3 py-1.5 bg-primary text-white rounded-lg font-bold text-xs"
+                                                        >
+                                                            Выбрать
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }

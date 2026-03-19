@@ -2,9 +2,10 @@
 
 import { useProfile } from '@/hooks/useProfile';
 import { api } from '@/lib/axios';
+import type { PaymentProviderSettings } from '@/lib/types/packs';
 import axios from 'axios';
 import { CheckCircle2, Globe, History, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function SettingsPage() {
     const { profile, isLoading, refreshProfile } = useProfile();
@@ -15,11 +16,39 @@ export default function SettingsPage() {
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [twofaSaving, setTwofaSaving] = useState(false);
     const [twofaError, setTwofaError] = useState<string | null>(null);
+    const [paymentSettings, setPaymentSettings] = useState<PaymentProviderSettings | null>(null);
+    const [paymentProviderDraft, setPaymentProviderDraft] = useState<'mock' | 'lava'>('mock');
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [paymentSaving, setPaymentSaving] = useState(false);
+    const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
 
     const telegramName = useMemo(() => {
         if (!profile) return '—';
         return profile.username ? `@${profile.username}` : 'не указан';
     }, [profile]);
+
+    useEffect(() => {
+        const fetchPaymentSettings = async () => {
+            setPaymentLoading(true);
+            setPaymentError(null);
+            try {
+                const { data } = await api.get<PaymentProviderSettings>('/admin/settings/payment');
+                setPaymentSettings(data);
+                setPaymentProviderDraft(data.provider);
+            } catch (err: unknown) {
+                if (axios.isAxiosError(err)) {
+                    setPaymentError((err.response?.data?.detail as string) || 'Не удалось загрузить настройки платежей.');
+                } else {
+                    setPaymentError('Не удалось загрузить настройки платежей.');
+                }
+            } finally {
+                setPaymentLoading(false);
+            }
+        };
+
+        fetchPaymentSettings();
+    }, []);
 
     const updatePassword = async () => {
         setPasswordSaving(true);
@@ -58,6 +87,28 @@ export default function SettingsPage() {
             }
         } finally {
             setTwofaSaving(false);
+        }
+    };
+
+    const savePaymentProvider = async () => {
+        setPaymentSaving(true);
+        setPaymentMessage(null);
+        setPaymentError(null);
+        try {
+            const { data } = await api.put<PaymentProviderSettings>('/admin/settings/payment', {
+                provider: paymentProviderDraft,
+            });
+            setPaymentSettings(data);
+            setPaymentProviderDraft(data.provider);
+            setPaymentMessage('Платежный провайдер сохранен.');
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setPaymentError((err.response?.data?.detail as string) || 'Не удалось сохранить платежного провайдера.');
+            } else {
+                setPaymentError('Не удалось сохранить платежного провайдера.');
+            }
+        } finally {
+            setPaymentSaving(false);
         }
     };
 
@@ -189,6 +240,62 @@ export default function SettingsPage() {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl overflow-hidden shadow-sm">
+                            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#2111d4]/10 bg-slate-50/50 dark:bg-slate-800/30">
+                                <h3 className="text-lg font-bold">Платежная система</h3>
+                            </div>
+                            <div className="p-5 sm:p-6 space-y-4">
+                                {paymentLoading ? (
+                                    <p className="text-sm text-slate-500">Загрузка настроек платежей...</p>
+                                ) : (
+                                    <>
+                                        <div className="space-y-2">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="payment_provider"
+                                                    value="mock"
+                                                    checked={paymentProviderDraft === 'mock'}
+                                                    onChange={() => setPaymentProviderDraft('mock')}
+                                                    disabled={paymentSaving}
+                                                />
+                                                <span className="text-sm font-medium">Тестовая оплата (Mock)</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="payment_provider"
+                                                    value="lava"
+                                                    checked={paymentProviderDraft === 'lava'}
+                                                    onChange={() => setPaymentProviderDraft('lava')}
+                                                    disabled={paymentSaving}
+                                                />
+                                                <span className="text-sm font-medium">Lava.top</span>
+                                            </label>
+                                        </div>
+
+                                        {paymentSettings && (
+                                            <div className="text-xs text-slate-500 space-y-1">
+                                                <p>LAVA_API_KEY: {paymentSettings.lava_api_key_configured ? 'настроен' : 'не настроен'}</p>
+                                                <p>LAVA_WEBHOOK_SECRET: {paymentSettings.lava_webhook_secret_configured ? 'настроен' : 'не настроен'}</p>
+                                            </div>
+                                        )}
+
+                                        {paymentError && <p className="text-sm text-red-500">{paymentError}</p>}
+                                        {paymentMessage && <p className="text-sm text-emerald-500">{paymentMessage}</p>}
+
+                                        <button
+                                            onClick={savePaymentProvider}
+                                            disabled={paymentSaving}
+                                            className="px-6 py-2.5 border-2 border-[#2111d4] text-[#2111d4] font-bold rounded-lg hover:bg-[#2111d4] hover:text-white transition-all text-sm sm:text-base disabled:opacity-60"
+                                        >
+                                            {paymentSaving ? 'Сохраняем...' : 'Сохранить провайдер'}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
