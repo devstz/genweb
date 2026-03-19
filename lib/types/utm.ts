@@ -13,7 +13,8 @@ export interface UtmCampaign {
     unique_clicks: number;
     registrations: number;
     purchases: number;
-    revenue: number;
+    revenue_rub: number;
+    revenue_usd: number;
 }
 
 export interface UtmCampaignListResponse {
@@ -37,7 +38,8 @@ export interface UtmSummary {
     unique_clicks: number;
     new_users: number;
     purchases: number;
-    revenue: number;
+    revenue_rub: number;
+    revenue_usd: number;
 }
 
 export interface UtmStats extends UtmSummary {
@@ -50,7 +52,8 @@ export interface UtmSeriesPoint {
     clicks: number;
     registrations: number;
     purchases: number;
-    revenue: number;
+    revenue_rub: number;
+    revenue_usd: number;
 }
 
 export interface UtmSeriesResponse {

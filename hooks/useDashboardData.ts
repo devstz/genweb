@@ -6,15 +6,22 @@ export interface DashboardMetrics {
     metrics: {
         uniqueUsers: { value: number; change: string; isPositive: boolean };
         totalGenerations: { value: number; change: string; isPositive: boolean };
-        revenueMonth: { value: string; change: string; isPositive: boolean };
+        revenueMonth: {
+            rub: number;
+            usd: number;
+            todayRub: number;
+            todayUsd: number;
+            change: string;
+            isPositive: boolean;
+        };
     };
     topTemplates: Array<{ id: number; name: string; usageCount: number; successRate: number }>;
-    systemHealth: Array<{ 
-        label: string; 
-        value: string; 
-        icon: string; 
-        isBadge: boolean; 
-        isGreen?: boolean; 
+    systemHealth: Array<{
+        label: string;
+        value: string;
+        icon: string;
+        isBadge: boolean;
+        isGreen?: boolean;
         iconColor?: string;
         subLabel?: string;
     }>;
@@ -24,7 +31,8 @@ export interface DashboardMetrics {
         status: string;
         percentage: number;
     };
-    revenueTrend: Array<{ label: string; value: number; fullDate: string }>;
+    /** По дням: rub и usd отдельно (без EUR в отчёте) */
+    revenueTrend: Array<{ label: string; rub: number; usd: number; fullDate: string }>;
 }
 
 const CACHE_TTL_MS = 2 * 60 * 1000;
@@ -40,7 +48,7 @@ function setCached(key: string, data: DashboardMetrics) {
     cache[key] = { data, ts: Date.now() };
 }
 
-export function useDashboardData(period: string = "week") {
+export function useDashboardData(period: string = 'week') {
     const [data, setData] = useState<DashboardMetrics | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -59,10 +67,10 @@ export function useDashboardData(period: string = "week") {
             }
             try {
                 setIsLoading(true);
-                const response = await api.get<DashboardMetrics>(
-                    `/admin/dashboard/metrics?period=${period}`,
-                    { signal: controller.signal }
-                );
+                const response = await api.get<DashboardMetrics>(`/admin/dashboard/metrics`, {
+                    params: { period },
+                    signal: controller.signal,
+                });
                 setCached(cacheKey, response.data);
                 setData(response.data);
                 setError(null);
@@ -87,7 +95,9 @@ export function useDashboardData(period: string = "week") {
     const refresh = async () => {
         try {
             setIsLoading(true);
-            const response = await api.get<DashboardMetrics>(`/admin/dashboard/metrics?period=${period}`);
+            const response = await api.get<DashboardMetrics>(`/admin/dashboard/metrics`, {
+                params: { period },
+            });
             setCached(`dashboard:${period}`, response.data);
             setData(response.data);
             setError(null);

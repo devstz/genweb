@@ -4,13 +4,10 @@ import { Icon } from '@/components/admin/Icon';
 import { useUtmCampaigns } from '@/hooks/useUtmCampaigns';
 import { generateStartCode } from '@/lib/start-code';
 import { useUtmSummary } from '@/hooks/useUtmStats';
+import { formatAdminRevenue } from '@/lib/formatAdminMoney';
 import type { UtmCreatePayload } from '@/lib/types/utm';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-
-function formatRub(value: number) {
-    return `${Math.round(value).toLocaleString('ru-RU')} ₽`;
-}
 
 export default function UtmPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -160,7 +157,12 @@ export default function UtmPage() {
                 </div>
                 <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-border-dark">
                     <p className="text-slate-400 text-sm font-medium mb-1">Общий доход</p>
-                    <h3 className="text-3xl font-bold">{formatRub(summary?.revenue ?? 0)}</h3>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                        {formatAdminRevenue(summary?.revenue_rub ?? 0, 'RUB')}
+                    </h3>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
+                        {formatAdminRevenue(summary?.revenue_usd ?? 0, 'USD')}
+                    </p>
                 </div>
             </div>
 
@@ -274,7 +276,14 @@ export default function UtmPage() {
                                         <td className="px-6 py-5 text-center font-medium">{campaign.unique_clicks}</td>
                                         <td className="px-6 py-5 text-center font-medium">{campaign.registrations}</td>
                                         <td className="px-6 py-5 text-center font-medium">{campaign.purchases}</td>
-                                        <td className="px-6 py-5 font-bold text-emerald-500">{formatRub(campaign.revenue)}</td>
+                                        <td className="px-6 py-5">
+                                            <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                                                {formatAdminRevenue(campaign.revenue_rub, 'RUB')}
+                                            </div>
+                                            <div className="font-bold text-amber-600 dark:text-amber-400 text-sm">
+                                                {formatAdminRevenue(campaign.revenue_usd, 'USD')}
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-5">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button

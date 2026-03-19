@@ -4,11 +4,19 @@ import { Icon } from '@/components/admin/Icon';
 import { MetricCard } from '@/components/admin/MetricCard';
 import { TemplateListCard } from '@/components/admin/TemplateListCard';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { useState } from 'react';
+import { formatAdminRevenue } from '@/lib/formatAdminMoney';
+import { useMemo, useState } from 'react';
 
 export default function DashboardPage() {
     const [period, setPeriod] = useState<'week' | 'month'>('week');
     const { data, isLoading, error } = useDashboardData(period);
+
+    const { maxRub, maxUsd } = useMemo(() => {
+        if (!data?.revenueTrend?.length) return { maxRub: 1, maxUsd: 1 };
+        const maxRub = Math.max(...data.revenueTrend.map((t) => Number(t.rub) || 0), 1);
+        const maxUsd = Math.max(...data.revenueTrend.map((t) => Number(t.usd) || 0), 1);
+        return { maxRub, maxUsd };
+    }, [data?.revenueTrend]);
 
     if (isLoading && !data) {
         return (
@@ -63,20 +71,42 @@ export default function DashboardPage() {
                     isPositive={data.metrics.totalGenerations.isPositive}
                     icon="auto_awesome"
                 />
-                <MetricCard
-                    title="Выручка (месяц)"
-                    value={data.metrics.revenueMonth.value}
-                    change={data.metrics.revenueMonth.change}
-                    isPositive={data.metrics.revenueMonth.isPositive}
-                    icon="payments"
-                />
+                <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-100 dark:border-border-dark shadow-sm transition-all hover:shadow-md">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="p-2 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                            <Icon name="payments" size={20} />
+                        </span>
+                        <span className="text-emerald-500 bg-emerald-500/10 text-xs font-bold px-2 py-1 rounded-full">
+                            ₽ + $
+                        </span>
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Выручка (месяц)</p>
+                    <div className="mt-2 space-y-1">
+                        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {formatAdminRevenue(data.metrics.revenueMonth.rub, 'RUB')}
+                        </p>
+                        <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                            {formatAdminRevenue(data.metrics.revenueMonth.usd, 'USD')}
+                        </p>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                        Сегодня: {formatAdminRevenue(data.metrics.revenueMonth.todayRub, 'RUB')} ·{' '}
+                        {formatAdminRevenue(data.metrics.revenueMonth.todayUsd, 'USD')}
+                    </p>
+                </div>
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Chart Section */}
                 <div className="lg:col-span-2 bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-100 dark:border-border-dark shadow-sm">
                     <div className="items-center justify-between mb-6 hidden md:flex">
-                        <h3 className="font-bold text-lg">Тренды выручки</h3>
+                        <div>
+                            <h3 className="font-bold text-lg">Тренды выручки</h3>
+                            <p className="text-[10px] text-slate-400 mt-1">
+                                Столбцы: <span className="text-primary font-bold">₽</span> ·{' '}
+                                <span className="text-amber-500 font-bold">$</span> (без суммирования валют)
+                            </p>
+                        </div>
                         <div className="flex bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
                             <button 
                                 onClick={() => setPeriod('week')}
@@ -104,32 +134,43 @@ export default function DashboardPage() {
                                 ? { minWidth: Math.max(400, data.revenueTrend.length * 24) } 
                                 : undefined}
                         >
-                            <div className="pt-14 h-64 flex items-end justify-between gap-1 md:gap-2">
-                        {data.revenueTrend.map((item, i) => {
-                            const maxValue = Math.max(...data.revenueTrend.map(t => t.value), 100);
-                            const height = `${Math.max(2, (item.value / maxValue) * 100)}%`;
-                            return (
-                                <div 
-                                    key={`bar-${item.label}-${i}`} 
-                                    className="flex-1 group h-full flex flex-col justify-end"
-                                >
-                                    <div 
-                                        style={{ height }}
-                                        className="relative w-full"
-                                    >
-                                        {/* Tooltip — всегда сверху над столбцом */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-slate-900 border border-slate-800 text-white rounded-lg text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none shadow-xl">
-                                            <p className="font-bold text-primary-foreground/80">{item.fullDate}</p>
-                                            <p className="text-sm font-black text-white">{item.value} ₽</p>
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                            <div className="pt-14 h-64 flex items-end justify-between gap-0.5 md:gap-1">
+                                {data.revenueTrend.map((item, i) => {
+                                    const hRub = `${Math.max(2, ((Number(item.rub) || 0) / maxRub) * 100)}%`;
+                                    const hUsd = `${Math.max(2, ((Number(item.usd) || 0) / maxUsd) * 100)}%`;
+                                    const last = i === data.revenueTrend.length - 1;
+                                    return (
+                                        <div
+                                            key={`bar-${item.label}-${i}`}
+                                            className="flex-1 h-full flex gap-0.5 items-end relative group"
+                                        >
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-slate-900 border border-slate-800 text-white rounded-lg text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none shadow-xl min-w-[140px]">
+                                                <p className="font-bold text-slate-300">{item.fullDate}</p>
+                                                <p className="text-xs font-bold text-white mt-1">
+                                                    {formatAdminRevenue(Number(item.rub) || 0, 'RUB')}
+                                                </p>
+                                                <p className="text-xs font-bold text-amber-300">
+                                                    {formatAdminRevenue(Number(item.usd) || 0, 'USD')}
+                                                </p>
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900" />
+                                            </div>
+                                            <div className="flex-1 h-full flex flex-col justify-end">
+                                                <div style={{ height: hRub }} className="w-full relative">
+                                                    <div
+                                                        className={`w-full h-full rounded-t-sm ${last ? 'bg-primary' : 'bg-primary/25 group-hover:bg-primary/50'} transition-colors`}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 h-full flex flex-col justify-end">
+                                                <div style={{ height: hUsd }} className="w-full relative">
+                                                    <div
+                                                        className={`w-full h-full rounded-t-sm ${last ? 'bg-amber-500' : 'bg-amber-500/25 group-hover:bg-amber-500/50'} transition-colors`}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div 
-                                            className={`w-full h-full ${i === data.revenueTrend.length - 1 ? 'bg-primary' : 'bg-primary/20 group-hover:bg-primary/60'} rounded-t-md transition-all duration-300`}
-                                        ></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                    );
+                                })}
                             </div>
                             <div className="flex justify-between mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-wider px-1">
                                 {(() => {

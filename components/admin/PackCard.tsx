@@ -1,18 +1,27 @@
 'use client';
 
 import { Icon } from '@/components/admin/Icon';
-import type { Pack } from '@/lib/types/packs';
+import { formatPackPriceForAdmin } from '@/lib/formatPackPrice';
+import type { DisplayCurrency, Pack } from '@/lib/types/packs';
 
 interface PackCardProps {
     pack: Pack;
+    displayCurrency?: DisplayCurrency;
     isToggling?: boolean;
     onToggle: (id: string) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
 }
 
-export function PackCard({ pack, isToggling, onToggle, onEdit, onDelete }: PackCardProps) {
-    const { id, name, description, generations_count, price, icon, is_active, is_bestseller } = pack;
+export function PackCard({
+    pack,
+    displayCurrency = 'RUB',
+    isToggling,
+    onToggle,
+    onEdit,
+    onDelete,
+}: PackCardProps) {
+    const { id, name, description, generations_count, icon, is_active, is_bestseller } = pack;
 
     const cardClasses = `bg-white dark:bg-surface-dark border rounded-xl overflow-hidden flex flex-col group transition-all ${
         is_active
@@ -26,7 +35,7 @@ export function PackCard({ pack, isToggling, onToggle, onEdit, onDelete }: PackC
         is_active ? 'bg-primary/20 text-primary' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
     }`;
 
-    const formatPrice = (p: number) => (Number.isInteger(p) ? `${p} ₽` : `${p.toFixed(2)} ₽`);
+    const priceLabel = formatPackPriceForAdmin(pack, displayCurrency);
 
     return (
         <div className={`${cardClasses} relative`}>
@@ -77,7 +86,7 @@ export function PackCard({ pack, isToggling, onToggle, onEdit, onDelete }: PackC
                         <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
                             Цена
                         </span>
-                        <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">{formatPrice(price)}</span>
+                        <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">{priceLabel}</span>
                     </div>
                 </div>
             </div>

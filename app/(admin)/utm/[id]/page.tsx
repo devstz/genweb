@@ -9,10 +9,7 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useUtmCampaignStats } from '@/hooks/useUtmStats';
-
-function formatRub(value: number) {
-    return `${Math.round(value).toLocaleString('ru-RU')} ₽`;
-}
+import { formatAdminRevenue } from '@/lib/formatAdminMoney';
 
 export default function UtmDetailsPage() {
     const params = useParams<{ id: string }>();
@@ -280,7 +277,12 @@ export default function UtmDetailsPage() {
                 </div>
                 <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-border-dark">
                     <p className="text-slate-400 text-sm font-medium mb-1">Общий доход</p>
-                    <h4 className="text-2xl font-black tracking-tight">{formatRub(stats?.revenue ?? 0)}</h4>
+                    <h4 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+                        {formatAdminRevenue(stats?.revenue_rub ?? 0, 'RUB')}
+                    </h4>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
+                        {formatAdminRevenue(stats?.revenue_usd ?? 0, 'USD')}
+                    </p>
                 </div>
             </div>
 

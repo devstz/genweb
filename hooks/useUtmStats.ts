@@ -105,10 +105,11 @@ export function useUtmCampaignStats(campaignId?: string, options: UseUtmCampaign
             if (options.to) {
                 dateParams.to = options.to;
             }
-
             const [statsRes, seriesRes, regsItems] = await Promise.all([
                 api.get<UtmStats>(`/admin/utm/${campaignId}/stats`, { params: dateParams }),
-                api.get<UtmSeriesResponse>(`/admin/utm/${campaignId}/series`, { params: { period, ...dateParams } }),
+                api.get<UtmSeriesResponse>(`/admin/utm/${campaignId}/series`, {
+                    params: { period, ...dateParams },
+                }),
                 fetchRegistrations({
                     limit: options.registrationsLimit ?? 20,
                     offset: options.registrationsOffset ?? 0,

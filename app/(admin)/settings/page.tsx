@@ -1,8 +1,9 @@
 'use client';
 
+import { useAdminDisplayCurrency } from '@/hooks/useAdminDisplayCurrency';
 import { useProfile } from '@/hooks/useProfile';
 import { api } from '@/lib/axios';
-import type { PaymentProviderSettings } from '@/lib/types/packs';
+import type { DisplayCurrency, PaymentProviderSettings } from '@/lib/types/packs';
 import axios from 'axios';
 import { CheckCircle2, Globe, History, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -22,6 +23,12 @@ export default function SettingsPage() {
     const [paymentSaving, setPaymentSaving] = useState(false);
     const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
     const [paymentError, setPaymentError] = useState<string | null>(null);
+    const { displayCurrency, isLoading: displayCurrencyLoading, error: displayCurrencyLoadError, refresh: refreshDisplayCurrency } =
+        useAdminDisplayCurrency();
+    const [displayCurrencyDraft, setDisplayCurrencyDraft] = useState<DisplayCurrency>('RUB');
+    const [displayCurrencySaving, setDisplayCurrencySaving] = useState(false);
+    const [displayCurrencyMessage, setDisplayCurrencyMessage] = useState<string | null>(null);
+    const [displayCurrencyError, setDisplayCurrencyError] = useState<string | null>(null);
 
     const telegramName = useMemo(() => {
         if (!profile) return '—';
@@ -49,6 +56,10 @@ export default function SettingsPage() {
 
         fetchPaymentSettings();
     }, []);
+
+    useEffect(() => {
+        setDisplayCurrencyDraft(displayCurrency);
+    }, [displayCurrency]);
 
     const updatePassword = async () => {
         setPasswordSaving(true);
@@ -87,6 +98,29 @@ export default function SettingsPage() {
             }
         } finally {
             setTwofaSaving(false);
+        }
+    };
+
+    const saveDisplayCurrency = async () => {
+        setDisplayCurrencySaving(true);
+        setDisplayCurrencyMessage(null);
+        setDisplayCurrencyError(null);
+        try {
+            await api.put('/admin/settings/display-currency', {
+                admin_display_currency: displayCurrencyDraft,
+            });
+            await refreshDisplayCurrency();
+            setDisplayCurrencyMessage('Валюта отображения сохранена.');
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setDisplayCurrencyError(
+                    (err.response?.data?.detail as string) || 'Не удалось сохранить валюту отображения.',
+                );
+            } else {
+                setDisplayCurrencyError('Не удалось сохранить валюту отображения.');
+            }
+        } finally {
+            setDisplayCurrencySaving(false);
         }
     };
 
@@ -240,6 +274,53 @@ export default function SettingsPage() {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl overflow-hidden shadow-sm">
+                            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#2111d4]/10 bg-slate-50/50 dark:bg-slate-800/30">
+                                <h3 className="text-lg font-bold">Отображение цен в админке</h3>
+                                <p className="text-xs text-slate-500 mt-1">Какую валюту показывать на карточках пакетов (страница «Цены»)</p>
+                            </div>
+                            <div className="p-5 sm:p-6 space-y-4">
+                                {displayCurrencyLoading ? (
+                                    <p className="text-sm text-slate-500">Загрузка...</p>
+                                ) : (
+                                    <>
+                                        <div className="space-y-2">
+                                            {(['RUB', 'USD', 'EUR'] as const).map((c) => (
+                                                <label key={c} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="admin_display_currency"
+                                                        value={c}
+                                                        checked={displayCurrencyDraft === c}
+                                                        onChange={() => setDisplayCurrencyDraft(c)}
+                                                        disabled={displayCurrencySaving}
+                                                    />
+                                                    <span className="text-sm font-medium">
+                                                        {c === 'RUB' ? 'Рубли (₽)' : c === 'USD' ? 'Доллары ($)' : 'Евро (€)'}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {displayCurrencyLoadError && (
+                                            <p className="text-sm text-amber-600 dark:text-amber-400">{displayCurrencyLoadError}</p>
+                                        )}
+                                        {displayCurrencyError && <p className="text-sm text-red-500">{displayCurrencyError}</p>}
+                                        {displayCurrencyMessage && (
+                                            <p className="text-sm text-emerald-500">{displayCurrencyMessage}</p>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={saveDisplayCurrency}
+                                            disabled={displayCurrencySaving}
+                                            className="px-6 py-2.5 border-2 border-[#2111d4] text-[#2111d4] font-bold rounded-lg hover:bg-[#2111d4] hover:text-white transition-all text-sm sm:text-base disabled:opacity-60"
+                                        >
+                                            {displayCurrencySaving ? 'Сохраняем...' : 'Сохранить валюту'}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
 

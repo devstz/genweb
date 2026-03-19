@@ -4,13 +4,15 @@ import { Icon } from '@/components/admin/Icon';
 import { useState } from 'react';
 import { PackCard } from '@/components/admin/PackCard';
 import { IconPicker } from '@/components/admin/IconPicker';
+import { useAdminDisplayCurrency } from '@/hooks/useAdminDisplayCurrency';
 import { usePacks } from '@/hooks/usePacks';
-import type { LavaOffer, Pack } from '@/lib/types/packs';
+import type { DisplayCurrency, LavaOffer, Pack } from '@/lib/types/packs';
 import { api } from '@/lib/axios';
 import axios from 'axios';
 
 export default function PricesPage() {
     const { packs, isLoading, error, createPack, updatePack, deletePack, togglePack, togglingId } = usePacks();
+    const { displayCurrency } = useAdminDisplayCurrency();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingPack, setEditingPack] = useState<Pack | null>(null);
     const [formData, setFormData] = useState<Partial<Pack>>({});
@@ -21,12 +23,18 @@ export default function PricesPage() {
 
     const handleOpenForm = (pack?: Pack) => {
         if (pack) {
+            const rub = pack.prices_by_currency?.RUB ?? pack.price;
             setEditingPack(pack);
             setFormData({
                 name: pack.name,
                 description: pack.description ?? '',
                 generations_count: pack.generations_count,
-                price: pack.price,
+                price: rub,
+                prices_by_currency: {
+                    RUB: rub,
+                    USD: pack.prices_by_currency?.USD,
+                    EUR: pack.prices_by_currency?.EUR,
+                },
                 icon: pack.icon ?? 'payments',
                 is_active: pack.is_active,
                 is_bestseller: pack.is_bestseller,
@@ -39,6 +47,7 @@ export default function PricesPage() {
                 description: '',
                 generations_count: 10,
                 price: 0,
+                prices_by_currency: { RUB: 0 },
                 icon: 'payments',
                 is_active: true,
                 is_bestseller: false,
@@ -55,11 +64,21 @@ export default function PricesPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        const rub = formData.price ?? 0;
+        const pc = formData.prices_by_currency ?? {};
+        const prices_by_currency: Partial<Record<DisplayCurrency, number>> = { RUB: rub };
+        if (pc.USD != null && !Number.isNaN(Number(pc.USD))) {
+            prices_by_currency.USD = Number(pc.USD);
+        }
+        if (pc.EUR != null && !Number.isNaN(Number(pc.EUR))) {
+            prices_by_currency.EUR = Number(pc.EUR);
+        }
         const payload = {
             name: formData.name ?? '',
             description: formData.description ?? undefined,
             generations_count: formData.generations_count ?? 0,
-            price: formData.price ?? 0,
+            price: rub,
+            prices_by_currency,
             icon: formData.icon ?? 'payments',
             is_active: formData.is_active ?? true,
             is_bestseller: formData.is_bestseller ?? false,
@@ -101,18 +120,24 @@ export default function PricesPage() {
                     if (!offer || typeof offer !== 'object') return;
                     const offerObj = offer as Record<string, unknown>;
                     const prices = Array.isArray(offerObj.prices) ? offerObj.prices : [];
-                    const firstPrice = prices[0] ?? null;
-                    const firstPriceObj =
-                        firstPrice && typeof firstPrice === 'object' ? (firstPrice as Record<string, unknown>) : null;
-                    const amountValue = typeof firstPriceObj?.amount === 'number' ? firstPriceObj.amount : null;
-                    const currencyValue = typeof firstPriceObj?.currency === 'string' ? firstPriceObj.currency : null;
+                    const normalized: { amount: number; currency: string }[] = [];
+                    prices.forEach((p) => {
+                        if (!p || typeof p !== 'object') return;
+                        const po = p as Record<string, unknown>;
+                        const cur = String(po.currency ?? '').toUpperCase();
+                        const amt = typeof po.amount === 'number' ? po.amount : null;
+                        if (amt != null && cur) normalized.push({ amount: amt, currency: cur });
+                    });
+                    const rubPrice = normalized.find((p) => p.currency === 'RUB');
+                    const firstPrice = rubPrice ?? normalized[0] ?? null;
                     offers.push({
                         productId,
                         productTitle,
                         offerId: String(offerObj.id ?? ''),
                         offerName: String(offerObj.name ?? 'Offer'),
-                        amount: amountValue,
-                        currency: currencyValue,
+                        amount: firstPrice?.amount ?? null,
+                        currency: firstPrice?.currency ?? null,
+                        prices: normalized,
                     });
                 });
             });
@@ -198,8 +223,62 @@ export default function PricesPage() {
                                         min={0}
                                         step={0.01}
                                         value={formData.price ?? 0}
-                                        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                                        onChange={(e) => {
+                                            const v = parseFloat(e.target.value) || 0;
+                                            setFormData({
+                                                ...formData,
+                                                price: v,
+                                                prices_by_currency: {
+                                                    ...(formData.prices_by_currency ?? {}),
+                                                    RUB: v,
+                                                },
+                                            });
+                                        }}
                                         className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Цена (USD)</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                        value={formData.prices_by_currency?.USD ?? ''}
+                                        onChange={(e) => {
+                                            const raw = e.target.value;
+                                            setFormData({
+                                                ...formData,
+                                                prices_by_currency: {
+                                                    ...(formData.prices_by_currency ?? {}),
+                                                    USD: raw === '' ? undefined : parseFloat(raw),
+                                                },
+                                            });
+                                        }}
+                                        className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3"
+                                        placeholder="Необязательно"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Цена (EUR)</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                        value={formData.prices_by_currency?.EUR ?? ''}
+                                        onChange={(e) => {
+                                            const raw = e.target.value;
+                                            setFormData({
+                                                ...formData,
+                                                prices_by_currency: {
+                                                    ...(formData.prices_by_currency ?? {}),
+                                                    EUR: raw === '' ? undefined : parseFloat(raw),
+                                                },
+                                            });
+                                        }}
+                                        className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3"
+                                        placeholder="Необязательно"
                                     />
                                 </div>
                             </div>
@@ -300,16 +379,39 @@ export default function PricesPage() {
                                                 <tr key={offer.offerId} className="border-t border-slate-100 dark:border-slate-800">
                                                     <td className="p-3">{offer.productTitle}</td>
                                                     <td className="p-3">{offer.offerName}</td>
-                                                    <td className="p-3">{offer.amount ?? '—'} {offer.currency ?? ''}</td>
+                                                    <td className="p-3">
+                                                        {offer.prices && offer.prices.length > 0
+                                                            ? offer.prices.map((p) => `${p.amount} ${p.currency}`).join(', ')
+                                                            : `${offer.amount ?? '—'} ${offer.currency ?? ''}`}
+                                                    </td>
                                                     <td className="p-3 font-mono text-xs">{offer.offerId}</td>
                                                     <td className="p-3">
                                                         <button
                                                             type="button"
                                                             onClick={() => {
+                                                                const byCur: Partial<Record<DisplayCurrency, number>> = {};
+                                                                if (offer.prices?.length) {
+                                                                    offer.prices.forEach((p) => {
+                                                                        const c = p.currency.toUpperCase() as DisplayCurrency;
+                                                                        if (c === 'RUB' || c === 'USD' || c === 'EUR') {
+                                                                            byCur[c] = p.amount;
+                                                                        }
+                                                                    });
+                                                                } else if (offer.amount != null && offer.currency) {
+                                                                    const c = offer.currency.toUpperCase() as DisplayCurrency;
+                                                                    if (c === 'RUB' || c === 'USD' || c === 'EUR') {
+                                                                        byCur[c] = offer.amount;
+                                                                    }
+                                                                }
+                                                                const rub = byCur.RUB;
                                                                 setFormData((prev) => ({
                                                                     ...prev,
                                                                     lava_offer_id: offer.offerId,
-                                                                    ...(offer.amount != null ? { price: offer.amount } : {}),
+                                                                    ...(rub != null ? { price: rub } : {}),
+                                                                    prices_by_currency: {
+                                                                        ...(prev.prices_by_currency ?? {}),
+                                                                        ...byCur,
+                                                                    },
                                                                 }));
                                                                 setIsLavaModalOpen(false);
                                                             }}
@@ -364,6 +466,7 @@ export default function PricesPage() {
                         <PackCard
                             key={pack.id}
                             pack={pack}
+                            displayCurrency={displayCurrency}
                             isToggling={togglingId === pack.id}
                             onToggle={() => togglePack(pack.id)}
                             onEdit={() => handleOpenForm(pack)}
