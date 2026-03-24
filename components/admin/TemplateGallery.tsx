@@ -1,7 +1,8 @@
 'use client';
 
 import { Icon } from '@/components/admin/Icon';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { api } from '@/lib/axios';
 import { Template } from '@/lib/types/templates';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useCategories } from '@/hooks/useCategories';
@@ -16,6 +17,8 @@ export default function TemplateGallery() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
     const [formData, setFormData] = useState<Partial<Template>>({});
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const filteredTemplates = useMemo(() => {
         return templates.filter(t => {
@@ -37,12 +40,34 @@ export default function TemplateGallery() {
                 description: '',
                 category: categories[0] ?? 'face',
                 status: 'active',
-                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGk5jAQZWsx1pwKk1ZfnRDTArPKzDzQofsxwX4xZDzAGBazgkACgh7tLlFq_PFXd7b31vyhmgdAk5GMhBSHtgvL-01i8k08jExi8rfFMimJXO2yaohNICK__ZDGzkr2g8yy3CH9IaL8EvbqQ-yTHAeCLBX6q3D-NWOd3nF7GBkSK5M-mlB0KdCoitGqaNl_6YA0QKBESbJXLD8nKLenXV-lyJCidLO152JT_nGbSvaqdrwYh_yIiA36g3lXA-mEclY96y9beGBhA',
+                image: '',
                 prompt: '',
                 negativePrompt: ''
             });
         }
         setIsFormOpen(true);
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        try {
+            setIsUploading(true);
+            const dataForm = new FormData();
+            dataForm.append('file', file);
+            
+            const { data } = await api.post('/admin/templates/upload', dataForm, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            setFormData(prev => ({ ...prev, image: data.path }));
+        } catch (err) {
+            console.error('Upload failed', err);
+            alert('Ошибка при загрузке изображения');
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleCloseForm = () => {
@@ -134,9 +159,25 @@ export default function TemplateGallery() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Превью</label>
-                                    <div className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-6 md:p-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center">
-                                        <Icon name="upload_file" size={40} className="text-slate-400 mb-2" />
-                                        <p className="text-xs md:text-sm text-slate-500">Нажмите для загрузки изображения</p>
+                                    <div 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-6 md:p-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center overflow-hidden relative min-h-[160px]"
+                                    >
+                                        {formData.image ? (
+                                            <img src={formData.image.startsWith('http') ? formData.image : `/media/${formData.image}`} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                        ) : (
+                                            <>
+                                                <Icon name={isUploading ? "hourglass_empty" : "upload_file"} size={40} className={`text-slate-400 mb-2 ${isUploading ? 'animate-spin' : ''}`} />
+                                                <p className="text-xs md:text-sm text-slate-500">{isUploading ? 'Загрузка...' : 'Нажмите для загрузки изображения'}</p>
+                                            </>
+                                        )}
+                                        <input 
+                                            type="file" 
+                                            ref={fileInputRef} 
+                                            className="hidden" 
+                                            accept="image/*" 
+                                            onChange={handleFileUpload}
+                                        />
                                     </div>
                                 </div>
                                 <div>
@@ -264,10 +305,12 @@ export default function TemplateGallery() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredTemplates.map(template => (
                     <div key={template.id} className="group bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden hover:border-primary/40 transition-all hover:shadow-xl flex flex-col">
-                        <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-primary/20">
-                            <div className="absolute inset-0 bg-linear-to-br from-primary/40 to-indigo-600/40 mix-blend-overlay z-0"></div>
-                            <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image} alt={template.title} />
-                            <div className="absolute top-2 right-2 md:top-3 md:right-3">
+                        <div className="aspect-[4/5] relative overflow-hidden bg-slate-100 dark:bg-primary/20">
+                            <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-900/60 z-10 transition-opacity group-hover:opacity-100"></div>
+                            {template.image && (
+                                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image.startsWith('http') ? template.image : `/media/${template.image}`} alt={template.title} />
+                            )}
+                            <div className="absolute top-2 right-2 md:top-3 md:right-3 z-20">
                                 <span className={`${getStatusColor(template.status)} text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
                                     {getStatusLabel(template.status)}
                                 </span>
