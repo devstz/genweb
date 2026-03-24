@@ -3,7 +3,7 @@ import { api } from '@/lib/axios';
 import { useState, useEffect, useCallback } from 'react';
 import type { Template } from '@/lib/types/templates';
 
-export function useTemplates() {
+export function useTemplates(templateType?: string) {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -12,7 +12,9 @@ export function useTemplates() {
         try {
             setIsLoading(true);
             setError(null);
-            const { data } = await api.get<Template[]>('/admin/templates');
+            const params: Record<string, string> = {};
+            if (templateType) params.templateType = templateType;
+            const { data } = await api.get<Template[]>('/admin/templates', { params });
             setTemplates(Array.isArray(data) ? data : []);
         } catch (err: unknown) {
             const msg = axios.isAxiosError(err)
@@ -23,7 +25,7 @@ export function useTemplates() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [templateType]);
 
     useEffect(() => {
         fetchTemplates();
@@ -36,6 +38,7 @@ export function useTemplates() {
         status: string;
         image?: string;
         negativePrompt?: string;
+        templateType?: string;
     }): Promise<Template | null> => {
         try {
             const { data } = await api.post<Template>('/admin/templates', {
@@ -45,6 +48,7 @@ export function useTemplates() {
                 status: payload.status,
                 image: payload.image,
                 negativePrompt: payload.negativePrompt,
+                templateType: payload.templateType || templateType || 'preset',
             });
             await fetchTemplates();
             return data;
@@ -59,7 +63,7 @@ export function useTemplates() {
 
     const updateTemplate = async (
         id: string,
-        payload: Partial<Pick<Template, 'title' | 'description' | 'category' | 'status' | 'image' | 'negativePrompt'>>
+        payload: Partial<Pick<Template, 'title' | 'description' | 'category' | 'status' | 'image' | 'negativePrompt'>> & { templateType?: string }
     ): Promise<Template | null> => {
         try {
             const { data } = await api.put<Template>(`/admin/templates/${id}`, payload);

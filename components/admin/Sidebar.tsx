@@ -99,6 +99,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             <nav className="flex-1 px-4 py-4 space-y-1">
                 {navLink('/dashboard', 'Дашборд', 'dashboard')}
                 {navLink('/templates', 'Шаблоны', 'description')}
+                {navLink('/postcards', 'Открытки', 'celebration')}
                 {navLink('/mailings', 'Рассылка', 'mail')}
                 {navLink('/prices', 'Цены', 'payments')}
                 {navLink('/logs', 'Логи', 'history')}

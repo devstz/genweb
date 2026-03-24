@@ -2,21 +2,27 @@ import axios from 'axios';
 import { api } from '@/lib/axios';
 import { useState, useEffect, useCallback } from 'react';
 
-export function useCategories() {
+export function useCategories(templateType?: string) {
     const [categories, setCategories] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchCategories = useCallback(async () => {
         try {
             setIsLoading(true);
-            const { data } = await api.get<string[]>('/admin/templates/categories');
+            const params: Record<string, string> = {};
+            if (templateType) params.templateType = templateType;
+            const { data } = await api.get<string[]>('/admin/templates/categories', { params });
             setCategories(Array.isArray(data) ? data : []);
         } catch {
-            setCategories(['face', 'motion', 'animals', 'scene']);
+            if (templateType === 'postcard') {
+                setCategories(['birthday', 'hearts', 'congrats']);
+            } else {
+                setCategories(['face', 'motion', 'animals', 'scene']);
+            }
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [templateType]);
 
     useEffect(() => {
         fetchCategories();

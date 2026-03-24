@@ -11,6 +11,7 @@ import { FormEvent, ReactNode, useEffect, useState } from 'react';
 const ROUTE_TITLES: Record<string, { title: string; subtitle?: string }> = {
     '/dashboard': { title: 'Обзор показателей', subtitle: 'Метрики в реальном времени' },
     '/templates': { title: 'Галерея шаблонов', subtitle: 'Управление шаблонами ответов' },
+    '/postcards': { title: 'Открытки', subtitle: 'Управление поздравительными шаблонами' },
     '/mailings': { title: 'Рассылка новостей', subtitle: 'Создайте и отправьте сообщение пользователям' },
     '/prices': { title: 'Цены', subtitle: 'Управление тарифными пакетами' },
     '/logs': { title: 'Логи генераций', subtitle: 'История последних запросов' },

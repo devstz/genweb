@@ -7,9 +7,9 @@ import { useTemplates } from '@/hooks/useTemplates';
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryDropdown } from '@/components/admin/CategoryDropdown';
 
-export default function TemplateGallery() {
-    const { templates, isLoading, error, createTemplate, updateTemplate, deleteTemplate } = useTemplates('preset');
-    const { categories, isLoading: categoriesLoading } = useCategories('preset');
+export default function PostcardGallery() {
+    const { templates: postcards, isLoading, error, createTemplate, updateTemplate, deleteTemplate } = useTemplates('postcard');
+    const { categories, isLoading: categoriesLoading } = useCategories('postcard');
     const [filterCategory, setFilterCategory] = useState('Все');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -17,14 +17,14 @@ export default function TemplateGallery() {
     const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
     const [formData, setFormData] = useState<Partial<Template>>({});
 
-    const filteredTemplates = useMemo(() => {
-        return templates.filter(t => {
+    const filteredPostcards = useMemo(() => {
+        return postcards.filter(t => {
             const matchesCategory = filterCategory === 'Все' || t.category === filterCategory;
             const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.description.toLowerCase().includes(searchQuery.toLowerCase());
             return matchesCategory && matchesSearch;
         });
-    }, [templates, filterCategory, searchQuery]);
+    }, [postcards, filterCategory, searchQuery]);
 
     const handleOpenForm = (template?: Template) => {
         if (template) {
@@ -35,7 +35,7 @@ export default function TemplateGallery() {
             setFormData({
                 title: '',
                 description: '',
-                category: categories[0] ?? 'face',
+                category: categories[0] ?? 'birthday',
                 status: 'active',
                 image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGk5jAQZWsx1pwKk1ZfnRDTArPKzDzQofsxwX4xZDzAGBazgkACgh7tLlFq_PFXd7b31vyhmgdAk5GMhBSHtgvL-01i8k08jExi8rfFMimJXO2yaohNICK__ZDGzkr2g8yy3CH9IaL8EvbqQ-yTHAeCLBX6q3D-NWOd3nF7GBkSK5M-mlB0KdCoitGqaNl_6YA0QKBESbJXLD8nKLenXV-lyJCidLO152JT_nGbSvaqdrwYh_yIiA36g3lXA-mEclY96y9beGBhA',
                 prompt: '',
@@ -56,10 +56,11 @@ export default function TemplateGallery() {
             title: formData.title ?? '',
             description: formData.description ?? '',
             prompt: formData.description ?? '',
-            category: formData.category ?? categories[0] ?? 'face',
+            category: formData.category ?? categories[0] ?? 'birthday',
             status: formData.status ?? 'active',
             image: formData.image,
             negativePrompt: formData.negativePrompt ?? '',
+            templateType: 'postcard',
         };
         if (editingTemplate) {
             const ok = await updateTemplate(editingTemplate.id, payload);
@@ -72,7 +73,7 @@ export default function TemplateGallery() {
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm('Вы уверены, что хотите удалить этот шаблон?')) return;
+        if (!confirm('Вы уверены, что хотите удалить эту открытку?')) return;
         await deleteTemplate(id);
     };
 
@@ -98,26 +99,26 @@ export default function TemplateGallery() {
         return (
             <div className="space-y-6 animate-in fade-in duration-300">
                 <button onClick={handleCloseForm} className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-medium text-sm">
-                    <Icon name="arrow_back" size={14} /> Назад к галерее
+                    <Icon name="arrow_back" size={14} /> Назад к открыткам
                 </button>
 
                 <div>
                     <div className="flex items-center gap-3 mb-6 md:mb-8">
                         <div className="w-8 md:w-10 h-1 bg-primary rounded-full"></div>
-                        <h3 className="text-xl md:text-2xl font-black">{editingTemplate ? 'Редактирование шаблона' : 'Настройка нового шаблона'}</h3>
+                        <h3 className="text-xl md:text-2xl font-black">{editingTemplate ? 'Редактирование открытки' : 'Настройка новой открытки'}</h3>
                     </div>
 
                     <form onSubmit={handleSave} className="space-y-6 md:space-y-8 bg-white dark:bg-surface-dark p-5 md:p-10 rounded-2xl border border-slate-200 dark:border-border-dark shadow-sm">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                             <div className="space-y-5 md:space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Название шаблона</label>
+                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Название открытки</label>
                                     <input
                                         required
                                         value={formData.title || ''}
                                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                                         className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3"
-                                        placeholder="e.g. Premium Welcome"
+                                        placeholder="e.g. С днём рождения"
                                         type="text"
                                     />
                                 </div>
@@ -166,13 +167,13 @@ export default function TemplateGallery() {
                             </div>
                             <div className="space-y-5 md:space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Описание шаблона</label>
+                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Промпт открытки</label>
                                     <textarea
                                         required
                                         value={formData.description || ''}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                                         className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3 md:p-4 resize-none"
-                                        placeholder="Опишите базовый промпт шаблона. Для пользовательского уточнения вставьте {additional_text}."
+                                        placeholder="Опишите базовый промпт открытки. Для пользовательского уточнения вставьте {additional_text}."
                                         rows={5}
                                     ></textarea>
                                 </div>
@@ -182,7 +183,7 @@ export default function TemplateGallery() {
                                         value={formData.negativePrompt || ''}
                                         onChange={e => setFormData({ ...formData, negativePrompt: e.target.value })}
                                         className="w-full bg-slate-50 dark:bg-primary/10 border border-slate-200 dark:border-border-dark rounded-xl focus:ring-primary focus:border-primary text-sm p-3 md:p-4 resize-none"
-                                        placeholder="Avoid mentioning prices, don't use emojis..."
+                                        placeholder="Avoid dark mood, scary images..."
                                         rows={4}
                                     ></textarea>
                                 </div>
@@ -198,7 +199,7 @@ export default function TemplateGallery() {
         );
     }
 
-    if (isLoading && templates.length === 0) {
+    if (isLoading && postcards.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-[300px]">
                 <Icon name="autorenew" size={40} className="animate-spin text-primary" />
@@ -213,12 +214,12 @@ export default function TemplateGallery() {
                     {error}
                 </div>
             )}
-            {/* Search — visible on all screens */}
+            {/* Search */}
             <div className="relative">
                 <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                     className="w-full md:w-72 lg:w-80 pl-9 pr-4 py-2 bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg focus:ring-2 focus:ring-primary text-sm"
-                    placeholder="Поиск шаблонов..."
+                    placeholder="Поиск открыток..."
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -227,9 +228,9 @@ export default function TemplateGallery() {
 
             {/* Action Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Управляйте, организуйте и развертывайте шаблоны ответов.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Управляйте открытками — поздравительные шаблоны для видео-открыток.</p>
                 <button onClick={() => handleOpenForm()} className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 md:px-6 py-2 md:py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 text-sm md:text-base w-full sm:w-auto">
-                    <Icon name="add" size={16} /> Новый шаблон
+                    <Icon name="add" size={16} /> Новая открытка
                 </button>
             </div>
 
@@ -262,10 +263,10 @@ export default function TemplateGallery() {
 
             {/* Grid Gallery */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {filteredTemplates.map(template => (
+                {filteredPostcards.map(template => (
                     <div key={template.id} className="group bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden hover:border-primary/40 transition-all hover:shadow-xl flex flex-col">
                         <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-primary/20">
-                            <div className="absolute inset-0 bg-linear-to-br from-primary/40 to-indigo-600/40 mix-blend-overlay z-0"></div>
+                            <div className="absolute inset-0 bg-linear-to-br from-pink-500/40 to-rose-600/40 mix-blend-overlay z-0"></div>
                             <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image} alt={template.title} />
                             <div className="absolute top-2 right-2 md:top-3 md:right-3">
                                 <span className={`${getStatusColor(template.status)} text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
@@ -297,7 +298,7 @@ export default function TemplateGallery() {
                     <div className="size-10 md:size-12 rounded-full bg-slate-100 dark:bg-primary/10 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/20 transition-all mb-3 md:mb-4">
                         <Icon name="add" size={28} />
                     </div>
-                    <p className="font-bold text-sm md:text-base text-slate-500 dark:text-slate-400 group-hover:text-primary">Создать шаблон</p>
+                    <p className="font-bold text-sm md:text-base text-slate-500 dark:text-slate-400 group-hover:text-primary">Создать открытку</p>
                 </div>
             </div>
         </div>
