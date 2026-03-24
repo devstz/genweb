@@ -1,7 +1,7 @@
 'use client';
 
 import { Icon } from '@/components/admin/Icon';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Template } from '@/lib/types/templates';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useCategories } from '@/hooks/useCategories';
@@ -15,6 +15,17 @@ export default function TemplateGallery() {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setFormData(prev => ({ ...prev, image: ev.target?.result as string }));
+        };
+        reader.readAsDataURL(file);
+    };
     const [formData, setFormData] = useState<Partial<Template>>({});
 
     const filteredTemplates = useMemo(() => {
@@ -37,7 +48,7 @@ export default function TemplateGallery() {
                 description: '',
                 category: categories[0] ?? 'face',
                 status: 'active',
-                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGk5jAQZWsx1pwKk1ZfnRDTArPKzDzQofsxwX4xZDzAGBazgkACgh7tLlFq_PFXd7b31vyhmgdAk5GMhBSHtgvL-01i8k08jExi8rfFMimJXO2yaohNICK__ZDGzkr2g8yy3CH9IaL8EvbqQ-yTHAeCLBX6q3D-NWOd3nF7GBkSK5M-mlB0KdCoitGqaNl_6YA0QKBESbJXLD8nKLenXV-lyJCidLO152JT_nGbSvaqdrwYh_yIiA36g3lXA-mEclY96y9beGBhA',
+                
                 prompt: '',
                 negativePrompt: ''
             });
@@ -134,9 +145,36 @@ export default function TemplateGallery() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Превью</label>
-                                    <div className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-6 md:p-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center">
-                                        <Icon name="upload_file" size={40} className="text-slate-400 mb-2" />
-                                        <p className="text-xs md:text-sm text-slate-500">Нажмите для загрузки изображения</p>
+                                    <div className="relative">
+                                        <div 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-6 md:p-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center"
+                                        >
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="hidden"
+                                            />
+                                            {formData.image ? (
+                                                <img src={formData.image} alt="Preview" className="max-h-32 rounded-lg object-contain" />
+                                            ) : (
+                                                <>
+                                                    <Icon name="upload_file" size={40} className="text-slate-400 mb-2" />
+                                                    <p className="text-xs md:text-sm text-slate-500">Нажмите для загрузки изображения</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        {formData.image && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, image: undefined })); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors shadow-md"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <div>
@@ -175,6 +213,19 @@ export default function TemplateGallery() {
                                         placeholder="Опишите базовый промпт шаблона. Для пользовательского уточнения вставьте {additional_text}."
                                         rows={5}
                                     ></textarea>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const current = formData.description || '';
+                                            const hasTag = current.includes('{additional_text}');
+                                            if (!hasTag) {
+                                                setFormData(prev => ({ ...prev, description: current + (current.endsWith(' ') || !current ? '' : ' ') + '{additional_text}' }));
+                                            }
+                                        }}
+                                        className="mt-2 px-3 py-1.5 text-xs font-medium bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
+                                    >
+                                        + Вставить {'{additional_text}'}
+                                    </button>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Негативный промпт</label>
