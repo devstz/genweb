@@ -16,6 +16,8 @@ export default function TemplateGallery() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
     
+    const [formData, setFormData] = useState<Partial<Template>>({});
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -26,9 +28,7 @@ export default function TemplateGallery() {
         };
         reader.readAsDataURL(file);
     };
-    const [formData, setFormData] = useState<Partial<Template>>({});
-    const [isUploading, setIsUploading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+
 
     const filteredTemplates = useMemo(() => {
         return templates.filter(t => {
@@ -58,26 +58,14 @@ export default function TemplateGallery() {
         setIsFormOpen(true);
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        
-        try {
-            setIsUploading(true);
-            const dataForm = new FormData();
-            dataForm.append('file', file);
-            
-            const { data } = await api.post('/admin/templates/upload', dataForm, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            
-            setFormData(prev => ({ ...prev, image: data.path }));
-        } catch (err) {
-            console.error('Upload failed', err);
-            alert('Ошибка при загрузке изображения');
-        } finally {
-            setIsUploading(false);
-        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setFormData(prev => ({ ...prev, image: ev.target?.result as string }));
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleCloseForm = () => {
@@ -341,8 +329,10 @@ export default function TemplateGallery() {
                     <div key={template.id} className="group bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden hover:border-primary/40 transition-all hover:shadow-xl flex flex-col">
                         <div className="aspect-[4/5] relative overflow-hidden bg-slate-100 dark:bg-primary/20">
                             <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-900/60 z-10 transition-opacity group-hover:opacity-100"></div>
-                            {template.image && (
+                            {template.image ? (
                                 <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image.startsWith('http') ? template.image : `/media/${template.image}`} alt={template.title} />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700" />
                             )}
                             <div className="absolute top-2 right-2 md:top-3 md:right-3 z-20">
                                 <span className={`${getStatusColor(template.status)} text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
