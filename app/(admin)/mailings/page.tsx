@@ -5,9 +5,11 @@ import { useState, useRef } from 'react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import { useMailings } from '@/hooks/useMailings';
+import { useMailings, type MailingAttachment } from '@/hooks/useMailings';
 import { useAudienceStats } from '@/hooks/useAudienceStats';
 import type { AudienceFilter } from '@/lib/types/mailings';
+import { api } from '@/lib/axios';
+import { toProxyMediaUrl } from '@/lib/mediaUrl';
 
 function insertFormat(
     text: string,
@@ -53,8 +55,17 @@ const STATUS_LABELS: Record<string, string> = {
     draft: 'Черновик',
 };
 
+async function uploadMailingMedia(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post<{ path: string }>('/admin/templates/upload', formData);
+    return data.path;
+}
+
 export default function MailingsPage() {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
     const [message, setMessage] = useState('');
     const [audience, setAudience] = useState<AudienceFilter>('all');
     const [includeAdmins, setIncludeAdmins] = useState(false);
@@ -62,20 +73,57 @@ export default function MailingsPage() {
     const [sendError, setSendError] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
+    const [attachment, setAttachment] = useState<MailingAttachment | null>(null);
+    const [attachmentBusy, setAttachmentBusy] = useState(false);
 
-    const { mailings, total, isLoading, error, sendMailing } = useMailings();
+    const { mailings, isLoading, error, sendMailing } = useMailings();
     const { stats, isLoading: statsLoading } = useAudienceStats(audience, includeAdmins);
 
+    const canSend = (message.trim().length > 0 || attachment !== null) && !attachmentBusy;
+
     const handleSend = async () => {
-        if (!message.trim()) return;
+        if (!canSend) return;
         setIsSending(true);
         setSendError(null);
-        const ok = await sendMailing(message.trim(), audience, includeAdmins);
+        const result = await sendMailing(message, audience, includeAdmins, attachment);
         setIsSending(false);
-        if (ok) {
+        if (result === true) {
             setMessage('');
+            setAttachment(null);
+            if (photoInputRef.current) photoInputRef.current.value = '';
+            if (videoInputRef.current) videoInputRef.current.value = '';
         } else {
-            setSendError('Не удалось отправить рассылку');
+            setSendError(result);
+        }
+    };
+
+    const handlePhotoPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAttachmentBusy(true);
+        setSendError(null);
+        try {
+            const path = await uploadMailingMedia(file);
+            setAttachment({ path, kind: 'photo' });
+        } catch {
+            setSendError('Не удалось загрузить фото');
+        } finally {
+            setAttachmentBusy(false);
+        }
+    };
+
+    const handleVideoPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAttachmentBusy(true);
+        setSendError(null);
+        try {
+            const path = await uploadMailingMedia(file);
+            setAttachment({ path, kind: 'video' });
+        } catch {
+            setSendError('Не удалось загрузить видео');
+        } finally {
+            setAttachmentBusy(false);
         }
     };
 
@@ -126,9 +174,68 @@ export default function MailingsPage() {
                                         <Icon name="edit_note" size={24} className="text-primary" />
                                     </div>
                                     <div className="flex-1 min-w-0 flex flex-col min-h-0">
+                                        {attachment && (
+                                            <div className="mb-3 flex items-start gap-3 rounded-lg border border-slate-200 dark:border-primary/20 p-2 bg-slate-50/80 dark:bg-primary/5">
+                                                <div className="shrink-0 rounded-md overflow-hidden bg-black/10 max-h-28">
+                                                    {attachment.kind === 'photo' ? (
+                                                        <img
+                                                            src={toProxyMediaUrl(attachment.path)}
+                                                            alt=""
+                                                            className="max-h-28 w-auto object-contain"
+                                                        />
+                                                    ) : (
+                                                        <video
+                                                            src={toProxyMediaUrl(attachment.path)}
+                                                            className="max-h-28 max-w-[200px] object-contain"
+                                                            muted
+                                                            controls
+                                                        />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0 text-xs text-slate-500 break-all pt-1">
+                                                    {attachment.kind === 'photo' ? 'Фото' : 'Видео'} · {attachment.path}
+                                                    <button
+                                                        type="button"
+                                                        className="block mt-2 text-primary font-medium hover:underline cursor-pointer"
+                                                        onClick={() => {
+                                                            setAttachment(null);
+                                                            if (photoInputRef.current) photoInputRef.current.value = '';
+                                                            if (videoInputRef.current) videoInputRef.current.value = '';
+                                                        }}
+                                                    >
+                                                        Убрать вложение
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                         {showPreview ? (
                                             <div className="scrollbar-thin rounded-lg bg-slate-50 dark:bg-primary/5 p-4 text-lg text-slate-700 dark:text-slate-300 flex-1 min-h-[120px] [&_strong]:font-bold [&_em]:italic [&_code]:bg-slate-200 dark:[&_code]:bg-primary/20 [&_code]:px-1 [&_code]:rounded [&_a]:text-primary [&_a]:underline overflow-auto">
-                                                {message ? <ReactMarkdown remarkPlugins={[remarkBreaks]}>{message}</ReactMarkdown> : <span className="text-slate-400">Нет текста для превью</span>}
+                                                {!message.trim() && !attachment ? (
+                                                    <span className="text-slate-400">Нет текста и вложения для превью</span>
+                                                ) : (
+                                                    <>
+                                                        {attachment?.kind === 'photo' && (
+                                                            <img
+                                                                src={toProxyMediaUrl(attachment.path)}
+                                                                alt=""
+                                                                className="max-h-40 rounded-lg mb-3 object-contain"
+                                                            />
+                                                        )}
+                                                        {attachment?.kind === 'video' && (
+                                                            <video
+                                                                src={toProxyMediaUrl(attachment.path)}
+                                                                className="max-h-40 max-w-full rounded-lg mb-3"
+                                                                muted
+                                                                controls
+                                                            />
+                                                        )}
+                                                        {message.trim() ? (
+                                                            <ReactMarkdown remarkPlugins={[remarkBreaks]}>{message}</ReactMarkdown>
+                                                        ) : (
+                                                            <span className="text-slate-400 text-sm">Только вложение (без подписи)</span>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
                                         ) : (
                                             <textarea
@@ -156,22 +263,42 @@ export default function MailingsPage() {
                                     <button type="button" onClick={() => handleFormat('`', '`')} className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Код (`код`)">
                                         <Icon name="code" size={20} />
                                     </button>
-                                    <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Добавить фото">
+                                    <input
+                                        ref={photoInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handlePhotoPick}
+                                    />
+                                    <input
+                                        ref={videoInputRef}
+                                        type="file"
+                                        accept="video/*"
+                                        className="hidden"
+                                        onChange={handleVideoPick}
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={attachmentBusy}
+                                        onClick={() => photoInputRef.current?.click()}
+                                        className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer disabled:opacity-50"
+                                        title="Добавить фото"
+                                    >
                                         <Icon name="image" size={20} />
                                     </button>
-                                    <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Добавить видео">
+                                    <button
+                                        type="button"
+                                        disabled={attachmentBusy}
+                                        onClick={() => videoInputRef.current?.click()}
+                                        className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer disabled:opacity-50"
+                                        title="Добавить видео"
+                                    >
                                         <Icon name="videocam" size={20} />
-                                    </button>
-                                    <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Смайлы">
-                                        <Icon name="mood" size={20} />
-                                    </button>
-                                    <button className="p-2 hover:bg-white dark:hover:bg-primary/10 rounded-lg text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" title="Прикрепить файл">
-                                        <Icon name="attach_file" size={20} />
                                     </button>
                                 </div>
                                 <button
                                     onClick={handleSend}
-                                    disabled={!message.trim() || isSending}
+                                    disabled={!canSend || isSending}
                                     className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSending ? (
@@ -283,9 +410,28 @@ export default function MailingsPage() {
                                         <Icon name="expand_more" size={24} className={`shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
                                     </button>
                                     {expanded && (
-                                        <div className="px-4 pb-4 pt-0">
+                                        <div className="px-4 pb-4 pt-0 space-y-3">
+                                            {m.attachment_path && m.attachment_type === 'photo' && (
+                                                <img
+                                                    src={toProxyMediaUrl(m.attachment_path)}
+                                                    alt=""
+                                                    className="max-h-40 rounded-lg object-contain border border-slate-200 dark:border-primary/20"
+                                                />
+                                            )}
+                                            {m.attachment_path && m.attachment_type === 'video' && (
+                                                <video
+                                                    src={toProxyMediaUrl(m.attachment_path)}
+                                                    className="max-h-40 max-w-full rounded-lg border border-slate-200 dark:border-primary/20"
+                                                    muted
+                                                    controls
+                                                />
+                                            )}
                                             <div className="rounded-lg bg-slate-50 dark:bg-primary/5 p-4 text-sm text-slate-700 dark:text-slate-300 [&_strong]:font-bold [&_em]:italic [&_code]:bg-slate-200 dark:[&_code]:bg-primary/20 [&_code]:px-1 [&_code]:rounded [&_a]:text-primary [&_a]:underline prose prose-sm dark:prose-invert max-w-none">
-                                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>{m.message || '—'}</ReactMarkdown>
+                                                {m.message?.trim() ? (
+                                                    <ReactMarkdown remarkPlugins={[remarkBreaks]}>{m.message}</ReactMarkdown>
+                                                ) : (
+                                                    <span className="text-slate-400">Нет текста</span>
+                                                )}
                                             </div>
                                         </div>
                                     )}

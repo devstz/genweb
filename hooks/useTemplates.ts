@@ -17,9 +17,7 @@ async function uploadImageIfNeeded(imageValue?: string): Promise<string | undefi
     const formData = new FormData();
     formData.append('file', file);
 
-    const { data } = await api.post<{ path: string }>('/admin/templates/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post<{ path: string }>('/admin/templates/upload', formData);
     return data.path;
 }
 
@@ -35,9 +33,7 @@ async function uploadVideoIfNeeded(videoValue?: string): Promise<string | undefi
     const formData = new FormData();
     formData.append('file', file);
 
-    const { data } = await api.post<{ path: string }>('/admin/templates/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post<{ path: string }>('/admin/templates/upload', formData);
     return data.path;
 }
 

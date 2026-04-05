@@ -6,6 +6,7 @@ import { Template } from '@/lib/types/templates';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryDropdown } from '@/components/admin/CategoryDropdown';
+import { toProxyMediaUrl } from '@/lib/mediaUrl';
 
 export default function PostcardGallery() {
     const { templates: postcards, isLoading, error, createTemplate, updateTemplate, deleteTemplate } = useTemplates('postcard');
@@ -377,9 +378,9 @@ export default function PostcardGallery() {
                         <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-primary/20">
                             <div className="absolute inset-0 bg-linear-to-br from-pink-500/40 to-rose-600/40 mix-blend-overlay z-0"></div>
                             {template.video ? (
-                                <video className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.video.startsWith('http') || template.video.startsWith('/') ? template.video : `/media/${template.video}`} muted loop playsInline onMouseOver={e => (e.target as HTMLVideoElement).play()} onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }} />
+                                <video className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={toProxyMediaUrl(template.video)} muted loop playsInline onMouseOver={e => (e.target as HTMLVideoElement).play()} onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }} />
                             ) : template.image ? (
-                                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image.startsWith('http') || template.image.startsWith('/') ? template.image : `/media/${template.image}`} alt={template.title} />
+                                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={toProxyMediaUrl(template.image)} alt={template.title} />
                             ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700" />
                             )}

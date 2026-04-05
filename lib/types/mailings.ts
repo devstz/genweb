@@ -8,6 +8,8 @@ export interface Mailing {
     recipient_count: number;
     created_at: string;
     sent_at: string | null;
+    attachment_path?: string | null;
+    attachment_type?: string | null;
 }
 
 export interface AudienceStats {

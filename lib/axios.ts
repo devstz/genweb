@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 // Запросы идут через Next.js rewrites (same-origin), бэкенд настраивается через API_BACKEND_URL на сервере
 const API_BASE = '/api/proxy/api/v1';
@@ -12,7 +12,10 @@ export const api = axios.create({
 
 // Перехватчик запросов (Добавляем Access Token)
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     // Получаем токен из localStorage (или cookies, если используете SSR/SSR cookies)
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     if (token && config.headers) {
