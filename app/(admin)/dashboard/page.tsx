@@ -4,12 +4,14 @@ import { Icon } from '@/components/admin/Icon';
 import { MetricCard } from '@/components/admin/MetricCard';
 import { TemplateListCard } from '@/components/admin/TemplateListCard';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { usePiapiBalance } from '@/hooks/usePiapiBalance';
 import { formatAdminRevenue } from '@/lib/formatAdminMoney';
 import { useMemo, useState } from 'react';
 
 export default function DashboardPage() {
     const [period, setPeriod] = useState<'week' | 'month'>('week');
     const { data, isLoading, error } = useDashboardData(period);
+    const { data: piapiData, isLoading: piapiLoading } = usePiapiBalance();
 
     const { maxRub, maxUsd } = useMemo(() => {
         if (!data?.revenueTrend?.length) return { maxRub: 1, maxUsd: 1 };
@@ -94,6 +96,56 @@ export default function DashboardPage() {
                         {formatAdminRevenue(data.metrics.revenueMonth.todayUsd, 'USD')}
                     </p>
                 </div>
+            </section>
+
+            {/* PiAPI Balance Card */}
+            <section className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-100 dark:border-border-dark shadow-sm transition-all hover:shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <span className="p-2 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center">
+                            <Icon name="smart_toy" size={20} />
+                        </span>
+                        <h3 className="font-bold text-lg">PiAPI Balance</h3>
+                    </div>
+                    {piapiData && !piapiData.error && (
+                        <span className="text-emerald-500 bg-emerald-500/10 text-xs font-bold px-2 py-1 rounded-full">
+                            ${piapiData.balance_usd?.toFixed(2)}
+                        </span>
+                    )}
+                </div>
+                {piapiLoading && !piapiData ? (
+                    <div className="flex justify-center py-4">
+                        <Icon name="autorenew" size={24} className="animate-spin text-primary" />
+                    </div>
+                ) : piapiData?.error ? (
+                    <p className="text-sm text-red-500">❌ PiAPI недоступен</p>
+                ) : piapiData ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Баланс</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${piapiData.balance_usd?.toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Кредиты</p>
+                            <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{piapiData.used_credits?.toLocaleString()}/{piapiData.total_credits?.toLocaleString()}</p>
+                            <div className="mt-1 h-2 bg-slate-100 dark:bg-background-dark rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-violet-500 rounded-full transition-all"
+                                    style={{ width: `${piapiData.total_credits ? Math.min(100, ((piapiData.used_credits || 0) / piapiData.total_credits) * 100) : 0}%` }}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Осталось генераций</p>
+                            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">~{piapiData.remaining_generations}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Модель</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{piapiData.current_model}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{piapiData.current_settings?.duration}s, {piapiData.current_settings?.resolution}p</p>
+                        </div>
+                    </div>
+                ) : null}
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -5,6 +5,7 @@ export interface Template {
     category: string;
     status: 'active' | 'test' | 'hidden';
     image: string;
+    video?: string;
     prompt: string;
     negativePrompt: string;
 }

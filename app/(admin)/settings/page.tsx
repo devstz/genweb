@@ -53,7 +53,6 @@ export default function SettingsPage() {
                 setPaymentLoading(false);
             }
         };
-
         fetchPaymentSettings();
     }, []);
 
@@ -150,234 +149,235 @@ export default function SettingsPage() {
         return <div className="text-sm text-slate-500">Загрузка...</div>;
     }
 
+    const twoFaClasses = profile.admin_require_telegram_2fa
+        ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+        : 'bg-slate-200/70 text-slate-600 dark:bg-slate-700 dark:text-slate-200';
+
+    const currencyOptions: { value: DisplayCurrency; label: string }[] = [
+        { value: 'RUB', label: 'Рубли (₽)' },
+        { value: 'USD', label: 'Доллары ($)' },
+        { value: 'EUR', label: 'Евро (€)' },
+    ];
+
+    function radioCardClass(active: boolean) {
+        return active
+            ? 'border-primary bg-primary/5 text-primary font-semibold'
+            : 'border-slate-200 dark:border-border-dark hover:border-primary/40';
+    }
+
     return (
-        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-sans p-4 sm:p-6 lg:p-8">
-            <div className="max-w-5xl mx-auto">
-                <header className="mb-8 sm:mb-10">
-                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Профиль администратора</h1>
-                    <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2">Управление личными данными и настройками безопасности</p>
-                </header>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl p-6 shadow-sm">
-                            <h2 className="text-lg sm:text-xl font-bold">{profile.name}</h2>
-                            <p className="text-[#2111d4] font-medium text-sm">{profile.role}</p>
-                            <div className="mt-6 w-full space-y-3">
-                                <div className="flex justify-between items-center text-sm py-2 border-b border-slate-100 dark:border-[#2111d4]/5">
-                                    <span className="text-slate-500">Telegram ID</span>
-                                    <span className="font-mono text-slate-900 dark:text-slate-200">{profile.user_id}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm py-2 border-b border-slate-100 dark:border-[#2111d4]/5">
-                                    <span className="text-slate-500">Telegram</span>
-                                    <span className="text-slate-900 dark:text-slate-200">{telegramName}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm py-2">
-                                    <span className="text-slate-500">Логин</span>
-                                    <span className="font-mono text-slate-900 dark:text-slate-200">{profile.admin_login ?? 'не задан'}</span>
-                                </div>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left column — profile card + activity */}
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-border-dark rounded-xl p-6 shadow-sm">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{profile.name}</h2>
+                        <p className="text-primary font-medium text-sm">{profile.role}</p>
+                        <div className="mt-6 space-y-3">
+                            <div className="flex justify-between items-center text-sm py-2 border-b border-slate-100 dark:border-border-dark">
+                                <span className="text-slate-500 dark:text-slate-400">Telegram ID</span>
+                                <span className="font-mono text-slate-900 dark:text-slate-200">{profile.user_id}</span>
                             </div>
-                        </div>
-
-                        <div className="bg-[#2111d4]/5 border border-[#2111d4]/10 rounded-xl p-6">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-[#2111d4] mb-4">Активность</h3>
-                            <div className="space-y-4">
-                                <div className="flex gap-3">
-                                    <History className="w-5 h-5 text-[#2111d4]/60 shrink-0" />
-                                    <div>
-                                        <p className="text-xs text-slate-500 uppercase font-semibold">Последний вход</p>
-                                        <p className="text-sm mt-0.5">—</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <Globe className="w-5 h-5 text-[#2111d4]/60 shrink-0" />
-                                    <div>
-                                        <p className="text-xs text-slate-500 uppercase font-semibold">IP Адрес</p>
-                                        <p className="text-sm font-mono mt-0.5">—</p>
-                                    </div>
-                                </div>
+                            <div className="flex justify-between items-center text-sm py-2 border-b border-slate-100 dark:border-border-dark">
+                                <span className="text-slate-500 dark:text-slate-400">Telegram</span>
+                                <span className="text-slate-900 dark:text-slate-200">{telegramName}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm py-2">
+                                <span className="text-slate-500 dark:text-slate-400">Логин</span>
+                                <span className="font-mono text-slate-900 dark:text-slate-200">{profile.admin_login ?? 'не задан'}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl overflow-hidden shadow-sm">
-                            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#2111d4]/10 bg-slate-50/50 dark:bg-slate-800/30">
-                                <h3 className="text-lg font-bold">Безопасность</h3>
-                            </div>
-
-                            <div className="p-5 sm:p-6 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                                    <div className="md:col-span-1">
-                                        <h4 className="font-bold text-sm">Смена пароля</h4>
-                                        <p className="text-xs text-slate-500 mt-1">Рекомендуется менять пароль регулярно</p>
-                                    </div>
-                                    <div className="md:col-span-2 space-y-4">
-                                        <input
-                                            type="password"
-                                            placeholder="Текущий пароль"
-                                            value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-[#2111d4]/20 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#2111d4]/40 transition-all text-sm sm:text-base"
-                                        />
-                                        <input
-                                            type="password"
-                                            placeholder="Новый пароль"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-[#2111d4]/20 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#2111d4]/40 transition-all text-sm sm:text-base"
-                                        />
-                                        {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
-                                        {passwordMessage && <p className="text-sm text-emerald-500">{passwordMessage}</p>}
-                                        <button
-                                            onClick={updatePassword}
-                                            disabled={passwordSaving}
-                                            className="w-full md:w-auto px-6 py-2.5 border-2 border-[#2111d4] text-[#2111d4] font-bold rounded-lg hover:bg-[#2111d4] hover:text-white transition-all text-sm sm:text-base disabled:opacity-60"
-                                        >
-                                            {passwordSaving ? 'Сохранение...' : 'Обновить пароль'}
-                                        </button>
-                                    </div>
+                    <div className="bg-primary/5 border border-primary/10 rounded-xl p-6">
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-primary mb-4">Активность</h3>
+                        <div className="space-y-4">
+                            <div className="flex gap-3">
+                                <History className="w-5 h-5 text-primary/60 shrink-0" />
+                                <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Последний вход</p>
+                                    <p className="text-sm mt-0.5">—</p>
                                 </div>
-
-                                <hr className="border-slate-200 dark:border-[#2111d4]/10" />
-
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2111d4]/10 rounded-xl flex items-center justify-center shrink-0">
-                                            <ShieldCheck className="w-6 h-6 text-[#2111d4]" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-sm">Двухфакторная аутентификация (2FA)</h4>
-                                            <p className="text-xs text-slate-500 mt-1 max-w-md">После ввода логина и пароля потребуется подтверждение входа в Telegram</p>
-                                            {twofaError && <p className="text-sm text-red-500 mt-2">{twofaError}</p>}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center self-start sm:self-auto">
-                                        <button
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-colors ${
-                                                profile.admin_require_telegram_2fa
-                                                    ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-                                                    : 'bg-slate-200/70 text-slate-600 dark:bg-slate-700 dark:text-slate-200'
-                                            }`}
-                                            disabled={twofaSaving}
-                                            onClick={() => toggleTwoFa(!profile.admin_require_telegram_2fa)}
-                                        >
-                                            <CheckCircle2 className="w-4 h-4" />
-                                            {profile.admin_require_telegram_2fa ? 'Включено' : 'Выключено'}
-                                        </button>
-                                        <button
-                                            className="ml-3 sm:ml-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
-                                            onClick={() => toggleTwoFa(!profile.admin_require_telegram_2fa)}
-                                            disabled={twofaSaving}
-                                        >
-                                            <SettingsIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <Globe className="w-5 h-5 text-primary/60 shrink-0" />
+                                <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">IP Адрес</p>
+                                    <p className="text-sm font-mono mt-0.5">—</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl overflow-hidden shadow-sm">
-                            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#2111d4]/10 bg-slate-50/50 dark:bg-slate-800/30">
-                                <h3 className="text-lg font-bold">Отображение цен в админке</h3>
-                                <p className="text-xs text-slate-500 mt-1">Какую валюту показывать на карточках пакетов (страница «Цены»)</p>
+                {/* Right column — settings cards */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Security */}
+                    <div className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-border-dark rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-5 border-b border-slate-100 dark:border-border-dark bg-slate-50/50 dark:bg-slate-800/30">
+                            <h3 className="text-lg font-bold">Безопасность</h3>
+                        </div>
+                        <div className="p-5 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="md:col-span-1">
+                                    <h4 className="font-bold text-sm">Смена пароля</h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Рекомендуется менять пароль регулярно</p>
+                                </div>
+                                <div className="md:col-span-2 space-y-4">
+                                    <input
+                                        type="password"
+                                        placeholder="Текущий пароль"
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/40 transition-all text-sm"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Новый пароль"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/40 transition-all text-sm"
+                                    />
+                                    {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
+                                    {passwordMessage && <p className="text-sm text-emerald-500">{passwordMessage}</p>}
+                                    <button
+                                        onClick={updatePassword}
+                                        disabled={passwordSaving}
+                                        className="w-full md:w-auto px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all text-sm disabled:opacity-60"
+                                    >
+                                        {passwordSaving ? 'Сохранение...' : 'Обновить пароль'}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="p-5 sm:p-6 space-y-4">
-                                {displayCurrencyLoading ? (
-                                    <p className="text-sm text-slate-500">Загрузка...</p>
-                                ) : (
-                                    <>
-                                        <div className="space-y-2">
-                                            {(['RUB', 'USD', 'EUR'] as const).map((c) => (
-                                                <label key={c} className="flex items-center gap-2 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="admin_display_currency"
-                                                        value={c}
-                                                        checked={displayCurrencyDraft === c}
-                                                        onChange={() => setDisplayCurrencyDraft(c)}
-                                                        disabled={displayCurrencySaving}
-                                                    />
-                                                    <span className="text-sm font-medium">
-                                                        {c === 'RUB' ? 'Рубли (₽)' : c === 'USD' ? 'Доллары ($)' : 'Евро (€)'}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                        {displayCurrencyLoadError && (
-                                            <p className="text-sm text-amber-600 dark:text-amber-400">{displayCurrencyLoadError}</p>
-                                        )}
-                                        {displayCurrencyError && <p className="text-sm text-red-500">{displayCurrencyError}</p>}
-                                        {displayCurrencyMessage && (
-                                            <p className="text-sm text-emerald-500">{displayCurrencyMessage}</p>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={saveDisplayCurrency}
-                                            disabled={displayCurrencySaving}
-                                            className="px-6 py-2.5 border-2 border-[#2111d4] text-[#2111d4] font-bold rounded-lg hover:bg-[#2111d4] hover:text-white transition-all text-sm sm:text-base disabled:opacity-60"
-                                        >
-                                            {displayCurrencySaving ? 'Сохраняем...' : 'Сохранить валюту'}
-                                        </button>
-                                    </>
-                                )}
+
+                            <hr className="border-slate-100 dark:border-border-dark" />
+
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-sm">Двухфакторная аутентификация (2FA)</h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md">После ввода логина и пароля потребуется подтверждение входа в Telegram</p>
+                                        {twofaError && <p className="text-sm text-red-500 mt-2">{twofaError}</p>}
+                                    </div>
+                                </div>
+                                <button
+                                    className={'flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-colors ' + twoFaClasses}
+                                    disabled={twofaSaving}
+                                    onClick={() => toggleTwoFa(!profile.admin_require_telegram_2fa)}
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    {profile.admin_require_telegram_2fa ? 'Включено' : 'Выключено'}
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-[#2111d4]/10 rounded-xl overflow-hidden shadow-sm">
-                            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#2111d4]/10 bg-slate-50/50 dark:bg-slate-800/30">
-                                <h3 className="text-lg font-bold">Платежная система</h3>
-                            </div>
-                            <div className="p-5 sm:p-6 space-y-4">
-                                {paymentLoading ? (
-                                    <p className="text-sm text-slate-500">Загрузка настроек платежей...</p>
-                                ) : (
-                                    <>
-                                        <div className="space-y-2">
-                                            <label className="flex items-center gap-2 cursor-pointer">
+                    {/* Display currency */}
+                    <div className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-border-dark rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-5 border-b border-slate-100 dark:border-border-dark bg-slate-50/50 dark:bg-slate-800/30">
+                            <h3 className="text-lg font-bold">Отображение цен в админке</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Какую валюту показывать на карточках пакетов</p>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            {displayCurrencyLoading ? (
+                                <p className="text-sm text-slate-500">Загрузка...</p>
+                            ) : (
+                                <>
+                                    <div className="flex flex-wrap gap-3">
+                                        {currencyOptions.map((c) => (
+                                            <label key={c.value} className={'flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ' + radioCardClass(displayCurrencyDraft === c.value)}>
                                                 <input
                                                     type="radio"
-                                                    name="payment_provider"
-                                                    value="mock"
-                                                    checked={paymentProviderDraft === 'mock'}
-                                                    onChange={() => setPaymentProviderDraft('mock')}
-                                                    disabled={paymentSaving}
+                                                    name="admin_display_currency"
+                                                    value={c.value}
+                                                    checked={displayCurrencyDraft === c.value}
+                                                    onChange={() => setDisplayCurrencyDraft(c.value)}
+                                                    disabled={displayCurrencySaving}
+                                                    className="sr-only"
                                                 />
-                                                <span className="text-sm font-medium">Тестовая оплата (Mock)</span>
+                                                <span className="text-sm">{c.label}</span>
                                             </label>
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="payment_provider"
-                                                    value="lava"
-                                                    checked={paymentProviderDraft === 'lava'}
-                                                    onChange={() => setPaymentProviderDraft('lava')}
-                                                    disabled={paymentSaving}
-                                                />
-                                                <span className="text-sm font-medium">Lava.top</span>
-                                            </label>
+                                        ))}
+                                    </div>
+                                    {displayCurrencyLoadError && (
+                                        <p className="text-sm text-amber-600 dark:text-amber-400">{displayCurrencyLoadError}</p>
+                                    )}
+                                    {displayCurrencyError && <p className="text-sm text-red-500">{displayCurrencyError}</p>}
+                                    {displayCurrencyMessage && (
+                                        <p className="text-sm text-emerald-500">{displayCurrencyMessage}</p>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={saveDisplayCurrency}
+                                        disabled={displayCurrencySaving}
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all text-sm disabled:opacity-60"
+                                    >
+                                        {displayCurrencySaving ? 'Сохраняем...' : 'Сохранить валюту'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Payment provider */}
+                    <div className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-border-dark rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-5 border-b border-slate-100 dark:border-border-dark bg-slate-50/50 dark:bg-slate-800/30">
+                            <h3 className="text-lg font-bold">Платежная система</h3>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            {paymentLoading ? (
+                                <p className="text-sm text-slate-500">Загрузка настроек платежей...</p>
+                            ) : (
+                                <>
+                                    <div className="flex flex-wrap gap-3">
+                                        <label className={'flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ' + radioCardClass(paymentProviderDraft === 'mock')}>
+                                            <input
+                                                type="radio"
+                                                name="payment_provider"
+                                                value="mock"
+                                                checked={paymentProviderDraft === 'mock'}
+                                                onChange={() => setPaymentProviderDraft('mock')}
+                                                disabled={paymentSaving}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-sm">Тестовая оплата (Mock)</span>
+                                        </label>
+                                        <label className={'flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ' + radioCardClass(paymentProviderDraft === 'lava')}>
+                                            <input
+                                                type="radio"
+                                                name="payment_provider"
+                                                value="lava"
+                                                checked={paymentProviderDraft === 'lava'}
+                                                onChange={() => setPaymentProviderDraft('lava')}
+                                                disabled={paymentSaving}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-sm">Lava.top</span>
+                                        </label>
+                                    </div>
+
+                                    {paymentSettings && (
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1 bg-slate-50 dark:bg-background-dark rounded-lg p-3">
+                                            <p>LAVA_API_KEY: <span className={paymentSettings.lava_api_key_configured ? 'font-mono text-emerald-500' : 'font-mono text-red-400'}>{paymentSettings.lava_api_key_configured ? 'настроен' : 'не настроен'}</span></p>
+                                            <p>LAVA_WEBHOOK_SECRET: <span className={paymentSettings.lava_webhook_secret_configured ? 'font-mono text-emerald-500' : 'font-mono text-red-400'}>{paymentSettings.lava_webhook_secret_configured ? 'настроен' : 'не настроен'}</span></p>
                                         </div>
+                                    )}
 
-                                        {paymentSettings && (
-                                            <div className="text-xs text-slate-500 space-y-1">
-                                                <p>LAVA_API_KEY: {paymentSettings.lava_api_key_configured ? 'настроен' : 'не настроен'}</p>
-                                                <p>LAVA_WEBHOOK_SECRET: {paymentSettings.lava_webhook_secret_configured ? 'настроен' : 'не настроен'}</p>
-                                            </div>
-                                        )}
+                                    {paymentError && <p className="text-sm text-red-500">{paymentError}</p>}
+                                    {paymentMessage && <p className="text-sm text-emerald-500">{paymentMessage}</p>}
 
-                                        {paymentError && <p className="text-sm text-red-500">{paymentError}</p>}
-                                        {paymentMessage && <p className="text-sm text-emerald-500">{paymentMessage}</p>}
-
-                                        <button
-                                            onClick={savePaymentProvider}
-                                            disabled={paymentSaving}
-                                            className="px-6 py-2.5 border-2 border-[#2111d4] text-[#2111d4] font-bold rounded-lg hover:bg-[#2111d4] hover:text-white transition-all text-sm sm:text-base disabled:opacity-60"
-                                        >
-                                            {paymentSaving ? 'Сохраняем...' : 'Сохранить провайдер'}
-                                        </button>
-                                    </>
-                                )}
-                            </div>
+                                    <button
+                                        onClick={savePaymentProvider}
+                                        disabled={paymentSaving}
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all text-sm disabled:opacity-60"
+                                    >
+                                        {paymentSaving ? 'Сохраняем...' : 'Сохранить провайдер'}
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

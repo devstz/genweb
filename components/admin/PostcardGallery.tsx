@@ -19,6 +19,7 @@ export default function PostcardGallery() {
     const [formData, setFormData] = useState<Partial<Template>>({});
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoFileInputRef = useRef<HTMLInputElement>(null);
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -29,6 +30,15 @@ export default function PostcardGallery() {
         reader.readAsDataURL(file);
     };
 
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setFormData(prev => ({ ...prev, video: ev.target?.result as string }));
+        };
+        reader.readAsDataURL(file);
+    };
 
     const filteredPostcards = useMemo(() => {
         return postcards.filter(t => {
@@ -52,7 +62,8 @@ export default function PostcardGallery() {
                 status: 'active',
                 
                 prompt: '',
-                negativePrompt: ''
+                negativePrompt: '',
+                video: undefined
             });
         }
         setIsFormOpen(true);
@@ -82,6 +93,7 @@ export default function PostcardGallery() {
             category: formData.category ?? categories[0] ?? 'birthday',
             status: formData.status ?? 'active',
             image: formData.image,
+            video: formData.video,
             negativePrompt: formData.negativePrompt ?? '',
             templateType: 'postcard',
         };
@@ -183,6 +195,40 @@ export default function PostcardGallery() {
                                             <button
                                                 type="button"
                                                 onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, image: undefined })); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors shadow-md"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Видео-превью</label>
+                                    <div className="relative">
+                                        <div 
+                                            onClick={() => videoFileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl p-4 md:p-6 flex flex-col items-center justify-center bg-slate-50 dark:bg-primary/5 cursor-pointer hover:border-primary/50 transition-colors text-center"
+                                        >
+                                            <input
+                                                ref={videoFileInputRef}
+                                                type="file"
+                                                accept="video/*"
+                                                onChange={handleVideoChange}
+                                                className="hidden"
+                                            />
+                                            {formData.video ? (
+                                                <video src={formData.video} className="max-h-32 rounded-lg" controls muted />
+                                            ) : (
+                                                <>
+                                                    <Icon name="videocam" size={32} className="text-slate-400 mb-2" />
+                                                    <p className="text-xs md:text-sm text-slate-500">Загрузить видео-превью (необязательно)</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        {formData.video && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, video: undefined })); if (videoFileInputRef.current) videoFileInputRef.current.value = ''; }}
                                                 className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-colors shadow-md"
                                             >
                                                 ✕
@@ -330,8 +376,10 @@ export default function PostcardGallery() {
                     <div key={template.id} className="group bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden hover:border-primary/40 transition-all hover:shadow-xl flex flex-col">
                         <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-primary/20">
                             <div className="absolute inset-0 bg-linear-to-br from-pink-500/40 to-rose-600/40 mix-blend-overlay z-0"></div>
-                            {template.image ? (
-                                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image.startsWith('http') ? template.image : `/media/${template.image}`} alt={template.title} />
+                            {template.video ? (
+                                <video className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.video.startsWith('http') || template.video.startsWith('/') ? template.video : `/media/${template.video}`} muted loop playsInline onMouseOver={e => (e.target as HTMLVideoElement).play()} onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }} />
+                            ) : template.image ? (
+                                <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={template.image.startsWith('http') || template.image.startsWith('/') ? template.image : `/media/${template.image}`} alt={template.title} />
                             ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700" />
                             )}
