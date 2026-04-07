@@ -7,7 +7,6 @@ export interface ProfileData {
     role: string;
     avatar: string | null;
     username: string | null;
-    bot_username: string | null;
     first_name: string | null;
     last_name: string | null;
     admin_login: string | null;

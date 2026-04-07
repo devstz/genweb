@@ -1,6 +1,7 @@
 'use client';
 
 import { Icon } from '@/components/admin/Icon';
+import { useBotUsername } from '@/hooks/useBotUsername';
 import { useProfile } from '@/hooks/useProfile';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
@@ -22,6 +23,7 @@ interface SidebarProps {
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
     const { profile, isLoading } = useProfile();
+    const { username: botUsername } = useBotUsername();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -147,9 +149,9 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                         </button>
                         {dropdownOpen && (
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl shadow-xl z-50">
-                                {profile?.bot_username && (
+                                {botUsername && (
                                     <a
-                                        href={`tg://resolve?domain=${profile.bot_username}`}
+                                        href={`tg://resolve?domain=${botUsername}`}
                                         className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                         onClick={() => setDropdownOpen(false)}
                                     >
