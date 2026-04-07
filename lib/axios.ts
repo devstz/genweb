@@ -30,14 +30,29 @@ api.interceptors.request.use(
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
+function isAuthRefreshRequest(config: InternalAxiosRequestConfig): boolean {
+  const url = config.url ?? '';
+  return url.includes('auth/refresh');
+}
+
 // Перехватчик ответов (Обработка 401 и автоматический рефреш)
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
+    // 401 на сам refresh — нельзя снова вызывать refresh (deadlock из-за await refreshPromise)
+    if (error.response?.status === 401 && originalRequest && isAuthRefreshRequest(originalRequest)) {
+      isRefreshing = false;
+      refreshPromise = null;
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
     // Если 401 и мы еще не пытались обновить токен для этого запроса
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       // Если уже идет рефреш - ждем его завершения

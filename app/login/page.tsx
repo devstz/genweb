@@ -41,11 +41,23 @@ export default function LoginPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (localStorage.getItem('access_token')) {
-            router.push('/dashboard');
-            return;
-        }
-        initAuth();
+        const bootstrap = async () => {
+            if (!localStorage.getItem('access_token')) {
+                initAuth();
+                return;
+            }
+            try {
+                await api.get('/admin/auth/me');
+                router.push('/dashboard');
+            } catch (err) {
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                }
+                initAuth();
+            }
+        };
+        void bootstrap();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
