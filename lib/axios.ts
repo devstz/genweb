@@ -26,6 +26,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Флаг для предотвращения повторных попыток рефреша
+let isRefreshing = false;
+let refreshPromise: Promise<void> | null = null;
+
 // Перехватчик ответов (Обработка 401 и автоматический рефреш)
 api.interceptors.response.use(
   (response) => response,
@@ -36,35 +40,65 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (!refreshToken) {
-            // Если нет рефреш токена, перекидываем на логин
-            window.location.href = '/login';
-            return Promise.reject(error);
-        }
-
-        // Пытаемся получить новый токен (через прокси)
-        const { data } = await api.post('/admin/auth/refresh', {
-          refresh_token: refreshToken,
-        });
-
-        // Сохраняем новые токены
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('refresh_token', data.refresh_token);
-
-        // Обновляем заголовок и повторяем оригинальный 401 запрос
-        originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
-        return api(originalRequest);
-        
-      } catch (refreshError) {
-        // Если рефреш тоже протух - разлогиниваем
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        if (typeof window !== 'undefined') {
+      // Если уже идет рефреш - ждем его завершения
+      if (isRefreshing) {
+        try {
+          await refreshPromise;
+          // Повторяем оригинальный запрос с новым токеном
+          const newToken = localStorage.getItem('access_token');
+          if (newToken) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+          return api(originalRequest);
+        } catch {
+          // Рефреш провалился - редирект на логин
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
           window.location.href = '/login';
+          return Promise.reject(error);
         }
-        return Promise.reject(refreshError);
+      }
+
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        // Если нет рефреш токена - сразу на логин
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      // Начинаем рефреш
+      isRefreshing = true;
+      refreshPromise = (async () => {
+        try {
+          const { data } = await api.post('/admin/auth/refresh', {
+            refresh_token: refreshToken,
+          });
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('refresh_token', data.refresh_token);
+        } catch (refreshError: any) {
+          // Рефреш токен протух или невалиден - чистим и редиректим
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+          throw refreshError;
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      })();
+
+      try {
+        await refreshPromise;
+        // Рефреш успешен - повторяем оригинальный запрос
+        const newToken = localStorage.getItem('access_token');
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        return api(originalRequest);
+      } catch {
+        // Рефреш провалился - уже редиректнули внутри refreshPromise
+        return Promise.reject(error);
       }
     }
 
